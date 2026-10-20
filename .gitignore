@@ -1,0 +1,14 @@
+# secrets
+.env
+
+# personal / generated data (only the two example files in data/ are tracked)
+data/*
+!data/companies.json
+!data/company_rules.json
+out/
+samples/
+
+# python / macOS
+__pycache__/
+*.pyc
+.DS_Store

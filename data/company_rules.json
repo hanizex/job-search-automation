@@ -1,0 +1,30 @@
+{
+  "_help": "Edit by hand. exclude = never suggest or scan (with reason). aliases = different spellings of one company -> one name. thresholds = scores for ADD / WATCH. weights = points per tracker status.",
+  "exclude": {
+    "example agency": "agency - scan direct sources first",
+    "example company": "not a fit (reason, date)"
+  },
+  "aliases": {
+    "actdigital": "act digital",
+    "act-digital": "act digital"
+  },
+  "weights": {
+    "interview": 10,
+    "talk": 8,
+    "offer": 10,
+    "applied": 5,
+    "rejected": 3,
+    "todo": 3,
+    "closed": 1,
+    "skip": -1
+  },
+  "extra_role_bonus": 2,
+  "extra_role_bonus_cap": 5,
+  "recent_days": 7,
+  "recent_bonus": 3,
+  "thresholds": {
+    "add": 10,
+    "watch": 5
+  },
+  "auto_remove_after_days": 30
+}

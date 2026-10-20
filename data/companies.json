@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Broadcom",
+    "ats": "Workday",
+    "endpoint": "https://broadcom.wd1.myworkdayjobs.com/wday/cxs/broadcom/External_Career/jobs",
+    "status": "OK",
+    "notes": "Confirmed live at broadcom.wd1.myworkdayjobs.com/en-US/External_Career (tenant=broadcom, site=External_Career). Requires a POST with WORKDAY_SEARCH_BODY as the JSON body — a plain GET returns nothing. True total confirmed via full pagination: 371 live postings (19 page(s) fetched).",
+    "job_count": 371,
+    "job_count_low_confidence": false
+  },
+  {
+    "name": "Payhawk",
+    "ats": "Greenhouse",
+    "endpoint": "https://boards-api.greenhouse.io/v1/boards/payhawkio/jobs",
+    "status": "OK",
+    "notes": "payhawk.com/careers is Greenhouse, slug 'payhawkio' — NOT 'payhawk', which 404s. CORRECTED: an earlier version of this table used boards-api.eu.greenhouse.io because the public career site lives on job-boards.eu.greenhouse.io, but that 'eu.' API host doesn't serve job JSON at all — it 302s to /users/sign_in (an admin login), so it silently looked 'down' on every later revalidation. The actual public Job Board API is unified on the plain boards-api.greenhouse.io host regardless of which regional domain the career site itself is served from. Confirmed live: 45 postings. True total confirmed via full pagination: 45 live postings (1 page(s) fetched).",
+    "job_count": 45,
+    "job_count_low_confidence": false
+  },
+  {
+    "name": "Nexo",
+    "ats": "Breezy HR",
+    "endpoint": "https://nexo.breezy.hr/json",
+    "status": "OK",
+    "notes": "Directly verified: 26 live postings, many Sofia/Bulgaria-based. Breezy HR isn't one of the ATSes named in the brief but exposes a genuinely public, unauthenticated JSON feed. True total confirmed via full pagination: 26 live postings (1 page(s) fetched).",
+    "job_count": 26,
+    "job_count_low_confidence": false
+  },
+  {
+    "name": "Dreamix",
+    "ats": "Workable",
+    "endpoint": "https://apply.workable.com/api/v1/widget/accounts/dreamix-ltd",
+    "status": "OK",
+    "notes": "dreamix.eu/careers links to apply.workable.com/dreamix-ltd. Directly verified: 10 live postings, mostly Sofia/remote. True total confirmed via full pagination: 9 live postings (1 page(s) fetched).",
+    "job_count": 9,
+    "job_count_low_confidence": false
+  },
+  {
+    "name": "Wise",
+    "ats": "SmartRecruiters",
+    "endpoint": "https://api.smartrecruiters.com/v1/companies/Wise/postings",
+    "status": "OK",
+    "notes": "wise.jobs footer states 'Career site system powered by SmartRecruiters Attrax'. jobs.smartrecruiters.com/Wise/... shows real live postings across many countries. NOTE: boards-api.greenhouse.io/v1/boards/wise/jobs also returns 200 with jobs, but that board belongs to an unrelated US company also named Wise — a false positive, do not use it. True total confirmed via full pagination: 420 live postings (5 page(s) fetched).",
+    "job_count": 420,
+    "job_count_low_confidence": false
+  },
+  {
+    "name": "Nord Security",
+    "ats": "Ashby",
+    "endpoint": "https://api.ashbyhq.com/posting-api/job-board/nord-security",
+    "status": "OK",
+    "notes": "Directly verified: 8 live postings (e.g. iOS Engineer, Outreach Specialist). True total confirmed via full pagination: 134 live postings (1 page(s) fetched).",
+    "job_count": 134,
+    "job_count_low_confidence": false
+  },
+  {
+    "name": "Crypto.com",
+    "ats": "Lever",
+    "endpoint": "https://api.lever.co/v0/postings/crypto?mode=json",
+    "status": "OK",
+    "notes": "Slug is 'crypto'. Directly verified: 10 live postings. True total confirmed via full pagination: 59 live postings (1 page(s) fetched).",
+    "job_count": 59,
+    "job_count_low_confidence": false
+  },
+  {
+    "name": "Addepto",
+    "ats": "Recruitee",
+    "endpoint": "https://addepto.recruitee.com/api/offers/",
+    "status": "OK",
+    "notes": "Auto-detected via slug 'addepto': 17 live postings.",
+    "source": "suggest_companies",
+    "added_on": "2026-10-11",
+    "score": 16,
+    "job_count": null,
+    "job_count_low_confidence": false
+  },
+  {
+    "name": "SAP Labs Bulgaria",
+    "ats": "SuccessFactors",
+    "endpoint": "",
+    "status": "MANUAL",
+    "notes": "jobs.sap.com runs on SAP SuccessFactors Career Site Builder (confirmed via the rmkcdn.successfactors.com CDN fingerprint). Listings are server-rendered HTML with no discoverable JSON API. Greenhouse slug 'sap' 404s. Needs manual/Chrome-agent monitoring, filtered to Bulgaria.",
+    "job_count": null,
+    "job_count_low_confidence": false
+  }
+]
