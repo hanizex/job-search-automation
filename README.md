@@ -51,6 +51,9 @@ I run it daily on macOS via `launchd`. Any cron-style scheduler works.
 
 ## Configuration
 
+The rules are tuned to my own search. **See [CUSTOMIZE.md](CUSTOMIZE.md)** for every setting to change and where it lives.
+
+
 - `data/companies.json`: the scan list (an example with 9 companies across different ATS types is included). Build your own with `discover_ats.py`.
 - `data/company_rules.json`: exclusions, aliases and scoring weights for `suggest_companies.py`.
 - `jd_rules.py`: the screening rules. Edit them to match your own constraints.
