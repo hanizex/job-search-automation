@@ -75,6 +75,12 @@ MAX_JOBS = 6000
 LOW_CONFIDENCE_PAGE_THRESHOLD = 3
 
 WORKDAY_PAGE_SIZE = 20  # confirmed hard cap: anything higher returns 0 results
+
+# A page whose first posting was already seen is usually a transient glitch on the tenant's
+# side, not the end of the list (confirmed live on Workday: the same request answered with a
+# repeated page, and a retry returned the next page). Re-ask this many times, then give up.
+WORKDAY_REPEAT_RETRIES = 2
+PAGE_RETRY_SLEEP_SECONDS = 3.0
 SMARTRECRUITERS_PAGE_SIZE = 100  # confirmed hard cap regardless of requested limit
 AMAZON_PAGE_SIZE = 100
 
@@ -145,6 +151,7 @@ def _paginate(
     fetch_page: Callable[[int], tuple[list, Optional[int]] | None],
     page_size: int,
     id_key: Callable[[dict], str],
+    repeat_retries: int = 0,
 ) -> FetchResult:
     """Shared pagination engine.
 
@@ -202,6 +209,17 @@ def _paginate(
             break
 
         first_id = id_key(items[0])
+        retries = 0
+        while first_id in seen_ids and retries < repeat_retries:
+            retries += 1
+            time.sleep(PAGE_RETRY_SLEEP_SECONDS)
+            again = fetch_page(offset)
+            if again is None or not again[0]:
+                break
+            items = again[0]  # the page total from the first answer stays the reference
+            first_id = id_key(items[0])
+        if retries and first_id not in seen_ids:
+            warnings.append(f"Offset {offset} repeated; cleared after {retries} re-request(s).")
         if first_id in seen_ids:
             capped = True
             warnings.append(
@@ -361,7 +379,8 @@ def fetch_workday_all(endpoint: str) -> FetchResult:
             return None
         return data.get("jobPostings") or [], data.get("total")
 
-    return _paginate(page, page_size=WORKDAY_PAGE_SIZE, id_key=lambda j: j.get("externalPath", ""))
+    return _paginate(page, page_size=WORKDAY_PAGE_SIZE, id_key=lambda j: j.get("externalPath", ""),
+                     repeat_retries=WORKDAY_REPEAT_RETRIES)
 
 
 # ---------------------------------------------------------------------------

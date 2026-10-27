@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1 - 2026-10-27
+
+### Fixed
+- **Workday pagination** (`ats_fetch.py`). A page that repeats the previous one is requested again, up to two times, before the list is treated as wrapped around. A transient glitch on the tenant side no longer cuts a board short or marks it as capped. The page total from the first answer is still the reference.
+
+### Added
+- `test_workday_retry.py`: offline tests for the repeat retry, including a Workday fetch with one glitched page.
+
 ## 0.2.0 - 2026-10-27
 
 ### Added

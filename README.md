@@ -38,6 +38,7 @@ python3 test_jd_screen.py     # 54 screening tests
 python3 test_priorities.py    # location priority tests
 python3 test_url_hints.py     # URL hint tests
 python3 test_patch.py         # tech-giant adapters and collapse tests
+python3 test_workday_retry.py # Workday repeat-page retry tests
 python3 poll_jobs.py --dry-run --no-notify
 ```
 
