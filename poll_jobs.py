@@ -40,6 +40,7 @@ from __future__ import annotations
 import argparse
 import html
 import json
+from collections import Counter
 import re
 import smtplib
 import subprocess
@@ -52,9 +53,14 @@ from email.mime.text import MIMEText
 from pathlib import Path
 from typing import Optional
 
+import ats as ats_adapters  # not `ats`: main() uses `ats` as a loop variable for the ATS label
 import ats_fetch
+import collapse
 import job_filters
 import jd_fetch
+import priorities
+from priorities import NON_EU_MEMBERS_RE as _NON_EU_MEMBERS_RE
+import url_hints
 import boards
 import signals
 import replies
@@ -97,21 +103,36 @@ NON_EU_ONLY_MARKERS = {
     "united states", "usa", "u.s.", "canada", "amer", "latam", "australia", "apac",
 }
 
+# 25.10: the markers above only catch the spelled-out names. US-based boards (Stripe, ServiceNow,
+# OpenAI, Databricks) write "US-Remote", "us; Remote", "Remote - California", "Remote, Costa Rica", so
+# priorities.NON_EU_MEMBERS_RE (US states and cities, Canadian provinces, LATAM and APAC countries,
+# whole words only) is consulted too. Same rule as the markers: only when no accept keyword is present.
+
 
 def title_matches(title: str) -> bool:
     t = (title or "").lower()
     return any(k in t for k in TITLE_KEYWORDS)
 
 
+_EU_WORD_RE = re.compile(r"\b(eu|eea|european union)\b", re.I)  # "Remote (EU or US)" must not be lost to the US marker
+
+
 def location_matches(location: str) -> bool:
     loc = (location or "").lower()
-    if any(k in loc for k in ACCEPT_KEYWORDS):
+    if any(k in loc for k in ACCEPT_KEYWORDS) or _EU_WORD_RE.search(loc):
         return True  # an explicit EU/EEA country, Bulgaria, Europe, or EMEA — always in, remote or not
     if "remote" in loc:
         # "Remote" with no EU/Bulgaria/Europe/EMEA signal — only accept if
         # it isn't scoped to a specifically excluded non-EU region.
-        return not any(m in loc for m in NON_EU_ONLY_MARKERS)
-    return False
+        return (not any(m in loc for m in NON_EU_ONLY_MARKERS)
+                and not _NON_EU_MEMBERS_RE.search(loc))
+    # 26.10: a European city named without its country ("Amsterdam", "Paris", "Dublin") or a
+    # region-wide remote without the word "remote" ("Worldwide", "Anywhere") has no accept keyword,
+    # so it used to be lost here: 9 Adyen/Checkout.com/ServiceNow roles in the first audit. Let
+    # priorities.py decide: P1/P2 pass (still never with a US/Canada/LATAM/APAC marker); P3 does not.
+    return (priorities.priority3(location) in (1, 2)
+            and not any(m in loc for m in NON_EU_ONLY_MARKERS)
+            and not _NON_EU_MEMBERS_RE.search(loc))
 
 
 # ---------------------------------------------------------------------------
@@ -425,6 +446,17 @@ def normalize_workable(job: dict, **_) -> dict:
                 apply=apply, hiring_entity="UNKNOWN")
 
 
+def normalize_remote(job: dict, **_) -> dict:
+    title = job.get("title") or "UNKNOWN"
+    location = _maybe_tag_remote(job.get("location") or "UNKNOWN", job.get("workplace") == "remote")
+    posted, sort_key = _date_display_and_sort(_iso_or_none(job.get("opened_at")))
+    public_id = job.get("public_id")
+    apply = f"https://apply.remote.com/jobs/{public_id}" if public_id else "UNKNOWN"
+    # Remote's public board is single-tenant (one employer), so no per-posting entity field.
+    return dict(title=title, location=location, posted_display=posted, posted_sort=sort_key,
+                apply=apply, hiring_entity="UNKNOWN")
+
+
 NORMALIZERS = {
     "Greenhouse": normalize_greenhouse,
     "Lever": normalize_lever,
@@ -435,6 +467,7 @@ NORMALIZERS = {
     "Recruitee": normalize_recruitee,
     "Breezy HR": normalize_breezy,
     "Workable": normalize_workable,
+    "Remote": normalize_remote,
 }
 
 
@@ -443,6 +476,8 @@ def normalize_job(ats: str, job: dict, endpoint: str) -> dict:
     if fn is None:
         raise ValueError(f"no normalizer for ATS {ats!r}")
     norm = fn(job, endpoint=endpoint)
+    for k in ("title", "location"):   # Workday sends "Customer Experience &amp; Business Process ..."
+        norm[k] = html.unescape(norm[k])
     try:  # Stage A (13.10): remember where the ad text can be read; no network here
         jd_fetch.attach_sources(norm, ats, job, endpoint)
     except Exception:
@@ -568,22 +603,52 @@ def markdown_table_to_html(md_text: str) -> str:
     )
 
 
+_N_LOCATIONS = re.compile(r"\s*(\d+)\s+locations?\s*$", re.I)
+
+
+def enrich_from_url(p: dict) -> None:
+    """26.10: add what the posting's own URL says (url_hints.py). Workday lists a several-city job as
+    "2 Locations"; the URL names the primary city, which is enough for the location filter, and the text says
+    where the city came from. Also fills p["notes"], a list shown in the Notes column: the requisition id, and the
+    title written in the URL when it differs from the listed title (HPE lists "DevOps Engineer" for a URL that
+    says "HPC Cluster Senior Administrator in US time zone")."""
+    h = url_hints.hints(p.get("apply"))
+    if not h:
+        return
+    notes = p.setdefault("notes", [])
+    m = _N_LOCATIONS.match(p.get("location") or "")
+    if m and h.get("location"):
+        p["location"] = f'{h["location"]} (primary, from URL, {m.group(0).strip()})'
+    if h.get("kind") == "workday" and h.get("req_id"):
+        notes.append(f"req {h['req_id']}")
+    if h.get("title") and url_hints.titles_differ(p.get("title"), h["title"]):
+        notes.append(f'URL title: "{h["title"]}"')
+
+
+def sort_postings(rows: list) -> list:
+    """26.10: priority 1 first, then 2, then 3; inside each priority, newest first. Two stable passes."""
+    rows.sort(key=lambda p: p["posted_sort"] or datetime.min, reverse=True)
+    rows.sort(key=lambda p: p.get("priority") or 9)
+    return rows
+
+
 def build_postings_table(postings: list[dict]) -> str:
     """Renders a list of normalized posting dicts (already sorted by the
     caller) as the project's standard markdown table. Shared by the normal
     new-postings output and --report-all, so both stay byte-for-byte the
     same format."""
     lines = [
-        "| Source Board | Hiring Entity | Title | Location | Posted | Apply |",
-        "|---|---|---|---|---|---|",
+        "| Prio | Source Board | Hiring Entity | Title | Location | Posted | Notes | Apply |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for p in postings:
         entity_cell = p["hiring_entity"].replace("|", "\\|")
         title_cell = p["title"].replace("|", "\\|")
         loc_cell = p["location"].replace("|", "\\|")
+        notes_cell = "; ".join(p.get("notes") or []).replace("|", "\\|")
         apply_cell = f"[Apply]({p['apply']})" if p["apply"] != "UNKNOWN" else "UNKNOWN"
-        lines.append(f"| {p['source_board']} | {entity_cell} | {title_cell} | {loc_cell} | "
-                      f"{p['posted_display']} | {apply_cell} |")
+        lines.append(f"| {priorities.label(p.get('priority'))} | {p['source_board']} | {entity_cell} | {title_cell} | {loc_cell} | "
+                      f"{p['posted_display']} | {notes_cell} | {apply_cell} |")
     return "\n".join(lines) + "\n"
 
 
@@ -719,6 +784,54 @@ def write_import_file(new_postings: list, pool_path: Path, out_path: Path) -> No
     out_path.write_text(json.dumps(items, ensure_ascii=False, indent=1), encoding="utf-8")
 
 
+def ats_rows_to_postings(rows: list) -> list:
+    """25.10: rows from ats.fetch_all use the patch's shape (company, role, url, location,
+    posted, ...). Every other source in this script uses title/apply/hiring_entity/source_board/
+    posted_display/posted_sort, so convert once here. hiring_entity stays UNKNOWN: ats.py gets the
+    company name from companies.json, not from the posting, and this project never presents a
+    guessed value as the posting's own field (see the normalizer notes above)."""
+    out = []
+    for r in rows:
+        posted = (r.get("posted") or "").strip()
+        try:
+            dt = datetime.strptime(posted, "%Y-%m-%d") if posted else None
+        except ValueError:
+            dt = None
+        out.append(dict(
+            title=html.unescape(r.get("role") or "UNKNOWN"),
+            location=html.unescape(r.get("location") or "UNKNOWN"),
+            posted_display=posted if dt else "UNKNOWN",
+            posted_sort=dt,
+            apply=r.get("url") or "UNKNOWN",
+            hiring_entity="UNKNOWN",
+            source_board=r.get("company") or "UNKNOWN",
+        ))
+    return out
+
+
+def collapse_postings(rows: list) -> tuple:
+    """25.10: one requisition published once per country becomes one card (collapse.py).
+    collapse.py reads company/role/url/location, so it works on a thin view of each posting and the
+    survivor is mapped back to the real posting dict. Returns (rows, run.log line)."""
+    views = []
+    for p in rows:
+        company = p["hiring_entity"] if p.get("hiring_entity") not in (None, "", "UNKNOWN") else p["source_board"]
+        views.append({"company": company, "role": p["title"],
+                      "url": p["apply"] if p["apply"] != "UNKNOWN" else "",
+                      "location": p["location"], "_row": p})
+    merged = collapse.collapse(views, priority_of=priorities.priority3)
+    out = []
+    for v in merged:
+        row = v["_row"]
+        if v.get("variants", 1) > 1:
+            row = dict(row)
+            row["location"] = v["location"]
+            row["variants"] = v["variants"]
+        row["priority"] = v.get("priority")
+        out.append(row)
+    return out, collapse.report(views, merged)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--companies", default=Path("data/companies.json"), type=Path)
@@ -816,6 +929,21 @@ def main():
     except Exception as e:
         log(f"FAILED job boards block: {e!r}", args.log)
 
+    # Tech-giant boards (25.10): Greenhouse / Ashby / Lever / SmartRecruiters via ats.py.
+    # Only rows written in the patch's own format are passed in (lowercase "ats", e.g. "greenhouse").
+    # Older rows ("Greenhouse", status "OK") are read by the ats_fetch loop above, and ats.fetch_all
+    # lower-cases "ats" and "status", so without this filter it would also pick those up and fail on
+    # them (they carry "endpoint", not token/slug) or fetch them twice. Workday giants are stored in
+    # the older endpoint format on purpose (ats.py's Workday adapter returns no posting dates).
+    try:
+        ats_rows, ats_errors = ats_adapters.fetch_all(
+            [c for c in companies if c.get("ats") in ats_adapters.ADAPTERS], log=lambda m: log(m, args.log))
+        all_postings.extend(ats_rows_to_postings(ats_rows))
+        for name, msg in ats_errors:
+            log(f"FAIL [{name}]: {msg}", args.log)
+    except Exception as e:
+        log(f"FAILED ats.py block: {e!r}", args.log)
+
     # Funding / grant signals (12.10): independent of job results, never blocks the run.
     if not args.dry_run:
         try:
@@ -831,6 +959,9 @@ def main():
     log(f"Fetched {len(all_postings)} raw posting(s) across {len(groups)} unique endpoint(s) "
         f"({len(failed_endpoints)} failed: {', '.join(failed_endpoints) if failed_endpoints else 'none'})",
         args.log)
+
+    for p in all_postings:
+        enrich_from_url(p)
 
     title_filtered = [p for p in all_postings if p.get("trusted_title") or title_matches(p["title"])]  # trusted: his own LinkedIn alerts (14.10)
     log(f"{len(title_filtered)}/{len(all_postings)} posting(s) matched a target title", args.log)
@@ -860,26 +991,26 @@ def main():
         f"{unknown_age_count} with no usable posted date)", args.log)
     matched = age_filtered
 
-    # Second pass (11.10): language gates, Poland/Ukraine-only, tracker duplicates,
-    # and relocation roles moved to a quiet watch list. See job_filters.py.
+    # Second pass (11.10; relocation list retired 25.10): language gates, Ukraine-only, tracker
+    # duplicates, and a location priority 1-3 on every kept row. See job_filters.py / priorities.py.
     tracker_idx = job_filters.load_tracker_index(Path("data/tracker_export.json"))
-    main_rows, reloc_rows, drop_reasons = [], [], {}
+    main_rows, drop_reasons = [], {}
     for p in matched:
         verdict, reason = job_filters.classify(p, tracker_idx)
         if verdict == "main":
             main_rows.append(p)
-        elif verdict == "relocation":
-            reloc_rows.append(p)
         else:
             drop_reasons[reason] = drop_reasons.get(reason, 0) + 1
-    if not args.dry_run and not args.report_all:
-        new_reloc = job_filters.update_relocation_watch(
-            reloc_rows, Path("data/relocation_watch.json"), args.out_dir / "relocation_watch.md")
-    else:
-        new_reloc = 0
-    log(f"{len(main_rows)}/{len(matched)} posting(s) kept; {len(reloc_rows)} to relocation watch "
-        f"({new_reloc} new, not emailed); dropped: "
+    by_priority = Counter(p.get("priority") for p in main_rows)
+    log(f"{len(main_rows)}/{len(matched)} posting(s) kept (by priority: "
+        + ", ".join(f"p{k} {by_priority[k]}" for k in sorted(by_priority, key=lambda x: (x is None, x)))
+        + "); dropped: "
         + (", ".join(f"{k} {v}" for k, v in drop_reasons.items()) or "none"), args.log)
+    # 25.10: after the drops, before the cross-source dedupe: one requisition published per country -> one card.
+    # (The tracker comparison already ran inside classify above, so every country variant of a job in the
+    # tracker was dropped there; what is left here is only jobs that are new to the tracker.)
+    main_rows, collapse_line = collapse_postings(main_rows)
+    log(collapse_line, args.log)
     # Same job from two sources (e.g. DEV.BG and the company's own ATS): keep the first.
     deduped, seen_jobs = [], set()
     for p in main_rows:
@@ -895,7 +1026,7 @@ def main():
 
     if args.report_all:
         report_path = args.out_dir / "all_current.md"
-        ordered = sorted(matched, key=lambda p: p["posted_sort"] or datetime.min, reverse=True)
+        ordered = sort_postings(list(matched))
         content = build_postings_table(ordered)
         args.out_dir.mkdir(parents=True, exist_ok=True)
         report_path.write_text(content, encoding="utf-8")
@@ -932,7 +1063,7 @@ def main():
 
     # All posted_sort values are naive datetimes (see _iso_or_none) or None
     # (unknown/imprecise — sorts as oldest), so this comparison is safe.
-    new_postings.sort(key=lambda p: p["posted_sort"] or datetime.min, reverse=True)
+    sort_postings(new_postings)
 
     # Stage A (13.10): read the body of every new ad and look for walls (jd_rules.py). Never blocks the run.
     try:

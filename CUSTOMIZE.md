@@ -19,6 +19,10 @@ Replace them with your own titles, for example `"data engineer"` or `"ux designe
 
 **`job_filters.py` → `LANG_IN_TITLE`.** Roles that require a language in the title ("German speaking") are dropped. Remove the languages you speak.
 
+**`location_rules.py` and `priorities.py`.** The location priority of every kept row. P1 is the home city on-site or hybrid, or fully remote. P2 is relocation within Europe, or a country that gives Ukrainians temporary protection (EU, Switzerland, Norway, Iceland, Liechtenstein). P3 needs a work visa. Germany-only and Ukraine-only are dropped. The home city is set in these two files; the defaults are Sofia, Bulgaria.
+
+**`priorities.py` → `SHOW_P3`.** P3 rows are hidden by default. Set it to `True` to show them at the bottom of the table.
+
 ## 3. Hidden blockers inside the ad text
 
 **`jd_rules.py` → `RULES`.** The "wall list" that is checked against the body of each ad. Each rule has a level:
@@ -35,6 +39,8 @@ After editing, run `python3 test_jd_screen.py` and update the expected verdicts 
 ## 4. Where to look
 
 **`data/companies.json`.** The companies whose ATS is polled directly. An example with 9 companies is included. Build your own list with `discover_ats.py` (it reads a numbered company list from `data/07_TIER1_LIST.md` and validates each ATS endpoint).
+
+**`ats.py` → `ADAPTERS`** and **`ats_fetch.py` → `FETCHABLE_ATS`.** The ATS families the poller reads. Remote.com is one of them: `"ats": "Remote"` with the endpoint `https://apply.remote.com/api/public/jobs`.
 
 **`boards.py` → `DEVBG_LISTS`, `DOU_FEEDS`, `DJINNI_LISTS`.** Job-board search pages and feeds. Mine target Bulgarian and Ukrainian PM categories. Replace the URLs with the searches you would open by hand.
 

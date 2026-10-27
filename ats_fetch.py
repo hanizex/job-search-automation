@@ -424,6 +424,19 @@ def fetch_breezy_all(slug: str) -> FetchResult:
     return FetchResult(data, len(data), len(data), 1)
 
 
+def fetch_remote_all(endpoint: str) -> FetchResult:
+    """Remote.com's public job board. One request returns every open job, no paging."""
+    r = _get(endpoint)
+    if isinstance(r, Exception) or r is None or r.status_code != 200:
+        return FetchResult([], None, 0, 1, error=f"HTTP error ({r})")
+    try:
+        jobs = r.json().get("jobs") or []
+    except ValueError:
+        return FetchResult([], None, 0, 1, error="non-JSON response")
+    jobs = [j for j in jobs if j.get("status") == "open" and j.get("accepting_applications")]
+    return FetchResult(jobs, len(jobs), len(jobs), 1)
+
+
 def fetch_workable_all(slug: str) -> FetchResult:
     url = f"https://apply.workable.com/api/v1/widget/accounts/{slug}"
     r = _get(url)
@@ -456,7 +469,7 @@ _WORKABLE_RE = re.compile(r"apply\.workable\.com/api/v1/widget/accounts/([^/?]+)
 # and stays MANUAL — there is nothing here to paginate.
 FETCHABLE_ATS = {
     "Greenhouse", "Lever", "Ashby", "SmartRecruiters", "Workday",
-    "Amazon (proprietary JSON API)", "Recruitee", "Breezy HR", "Workable",
+    "Amazon (proprietary JSON API)", "Recruitee", "Breezy HR", "Workable", "Remote",
 }
 
 
@@ -486,4 +499,6 @@ def fetch_all(ats: str, endpoint: str) -> FetchResult:
     if ats == "Workable":
         m = _WORKABLE_RE.search(endpoint)
         return fetch_workable_all(m.group(1)) if m else FetchResult([], None, 0, 0, error="couldn't parse slug")
+    if ats == "Remote":
+        return fetch_remote_all(endpoint)
     return FetchResult([], None, 0, 0, error=f"no fetcher for ATS {ats!r}")

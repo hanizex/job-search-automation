@@ -2,16 +2,18 @@
 job_filters.py - second-pass filter for Agent 1 (called from poll_jobs.py).
 
 Every posting that passed the title / location / age filters gets one verdict:
-  main        -> goes to the daily email and out/latest.md
-  relocation  -> silently stored in data/relocation_watch.json (no email, no AI, no tracker)
+  main        -> goes to the daily email and out/latest.md; carries p["priority"] 1-3
   drop        -> ignored (reason is counted in run.log)
+(The "relocation" verdict and data/relocation_watch.json were retired on 25.10.2026.)
 
-Rules agreed with Mykola on 11.10.2026:
-  1. A language in the title (German speaking, with French, ...) -> drop.
-  2. Poland / Ukraine only, even if marked "Remote" -> drop (Polish remote is rarely remote,
-     and an unstated Polish requirement is still a requirement).
-  3. Office or country-bound role in the EU without Europe-wide remote -> relocation watch.
-     Germany -> drop (he will not relocate to Germany).
+Rules agreed with Mykola on 11.10.2026, changed on 25.10.2026:
+  1. A language in the title (German speaking, with French, ...) -> drop. Unchanged: working-level
+     Polish stays a blocker. Language and location are separate axes.
+  2. Ukraine only, even if marked "Remote" -> drop. Poland is no longer dropped on location.
+  3. Location is a priority, not a waiting list (priorities.py, on top of location_rules.py):
+     1 = Sofia on-site/hybrid, or fully remote; 2 = relocation within Europe or a country that gives
+     Ukrainians temporary protection; 3 = needs a work visa or protection does not apply.
+     Germany-only and Ukraine-only are dropped. A multi-country string keeps its best priority.
   4. Already in the tracker -> drop as duplicate. 13.10: dedupe.py (URL, job id, canonical company +
      same role family + same meaningful title words, card younger than 60 days).
 Python 3.9 compatible, no extra dependencies.
@@ -25,6 +27,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import dedupe
+import location_rules
+import priorities
 
 LANG_IN_TITLE = re.compile(
     r"\b(german|deutsch|french|fran[cç]ais|dutch|polish|italian|spanish|portuguese|czech|slovak|"
@@ -42,7 +46,7 @@ COUNTRIES = [
 ]
 NON_EU = re.compile(r"\b(us|usa|u\.s\.|united states|canada|ca|amer|americas|latam|apac|australia|india|"
                     r"singapore|philippines|brazil|mexico)\b", re.I)
-JUNIOR_OR_OFFSCOPE = re.compile(r"\b(intern|internship|junior|associate|graduate|trainee|marketing|coordinator|"
+JUNIOR_OR_OFFSCOPE = re.compile(r"\b(intern|internship|junior|associate|graduate|grad|trainee|marketing|coordinator|"
                                 r"course|training program|learning|returns|servicenow|itsm|trading|derivatives)\b", re.I)
 LOW_PAY_BUCKET = re.compile(r"·\s*\$\s*$")  # Djinni "$" = below average for the role
 CITY_TO_COUNTRY = {
@@ -126,24 +130,22 @@ def classify(p: dict, idx: dict):
         return "drop", "Djinni pay bucket $ (below average)"
     if in_tracker(p, idx):
         return "drop", "already in tracker"
-    if "outside sofia" in low:  # DEV.BG office role in another Bulgarian city
-        return "relocation", "Bulgaria, outside Sofia"
+    # 25.10: location is a priority, not a relocation waiting list. 26.10: three levels (priorities.py).
+    # Only Germany-only and Ukraine-only are location drops. "Armenia only" and "non-EU region"
+    # no longer drop: priority_for() ranks them 4.
+    prio = priorities.priority3(loc)
+    if prio is None:
+        return "drop", location_rules.explain(loc)
+    if prio == 3 and not priorities.SHOW_P3:
+        return "drop", "P3 hidden (needs a visa; priorities.SHOW_P3)"
+    p["priority"] = prio
+    if location_rules.entity_risk(loc):
+        p["entity_risk"] = True
     found = {c for c in COUNTRIES if c in low}
     found |= {country for city, country in CITY_TO_COUNTRY.items() if city in low}
-    broad, remote, home = bool(BROAD.search(loc)), bool(REMOTE.search(loc)), bool(HOME.search(loc))
-    if re.search(r"\bBG\b", loc):
-        home = True
-    if home or broad:
-        return "main", ""
-    if NON_EU.search(loc) and not found - {"united kingdom", "israel", "united arab emirates"}:
-        return "drop", "non-EU region"
-    if found and found <= {"poland", "ukraine"}:
-        return "drop", "Poland/Ukraine only"
-    if found == {"germany"}:
-        return "drop", "Germany only (no relocation to Germany)"
-    if remote and not found:
-        return "main", ""
-    return "relocation", ", ".join(sorted(found)) or "office"
+    if found and found <= {"ukraine"}:  # Poland removed from this rule on 25.10; language rules are separate
+        return "drop", "Ukraine only"
+    return "main", ""
 
 
 def update_relocation_watch(rows: list, json_path: Path, md_path: Path) -> int:

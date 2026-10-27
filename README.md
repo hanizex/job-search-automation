@@ -9,8 +9,8 @@ I approached it the way I run delivery: start from the real process, automate th
 | Step | Script | What happens |
 |---|---|---|
 | **1. Discover** | `discover_ats.py`, `discover_careers.py` | Finds which Applicant Tracking System (ATS) each target company uses and validates a working jobs endpoint |
-| **2. Collect** | `poll_jobs.py` → `ats_fetch.py`, `boards.py` | Pulls *all* postings from 9 ATS types and 5 job sources (DEV.BG, DOU, Djinni, LinkedIn & My Manager alert emails) |
-| **3. Filter** | `job_filters.py` | Keeps PM-shaped titles in Bulgaria / Europe / Remote; routes relocation-only roles to a separate watch list |
+| **2. Collect** | `poll_jobs.py` → `ats_fetch.py`, `boards.py` | Pulls *all* postings from 10 ATS types and 5 job sources (DEV.BG, DOU, Djinni, LinkedIn & My Manager alert emails) |
+| **3. Filter** | `job_filters.py` | Keeps PM-shaped titles in Bulgaria / Europe / Remote; gives every kept row a priority: P1 (home city on-site or fully remote), P2 (relocation in Europe), P3 (needs a visa, hidden by default) |
 | **4. Screen the ad** | `jd_fetch.py`, `jd_screen.py`, `jd_rules.py` | Downloads the ad text and flags blockers (residency, required languages, on-site outside Sofia, mandatory certifications) as **wall / ask / ok** |
 | **5. De-duplicate** | `dedupe.py` | Matches by URL, board job id, and company + similar role against the application tracker |
 | **6. Report** | `poll_jobs.py` | Writes `out/latest.md` and sends an email digest with only the postings not seen before |
@@ -20,7 +20,7 @@ I approached it the way I run delivery: start from the real process, automate th
 
 ## Design decisions
 
-- **APIs first, no scraping where an API exists.** Greenhouse, Lever, Ashby, SmartRecruiters, Workable, Recruitee, Breezy HR, Workday and Amazon expose public job endpoints. Boards are read at a low rate (3 s between requests), the same pages a person sees.
+- **APIs first, no scraping where an API exists.** Greenhouse, Lever, Ashby, SmartRecruiters, Workable, Recruitee, Breezy HR, Workday, Amazon and Remote.com expose public job endpoints. Boards are read at a low rate (3 s between requests), the same pages a person sees.
 - **Pagination is a trap, so it is handled explicitly.** SmartRecruiters silently caps pages at 100, Workday caps `limit` at 20 and *wraps around* after 2,000 results. `ats_fetch.py` paginates to the real end and de-duplicates by posting id.
 - **Rules, not AI, for screening.** Filters and ad screening are plain, explainable regex rules. Every skip carries a reason, so wrong skips are easy to spot and fix.
 - **Read-only and safe by default.** Email access never moves, deletes or marks messages. `--dry-run` writes nothing. A failure in one source never stops the daily run.
@@ -35,6 +35,9 @@ cd job-search-automation
 pip3 install -r requirements.txt
 cp .env.example .env          # only needed for the email digest / inbox features
 python3 test_jd_screen.py     # 54 screening tests
+python3 test_priorities.py    # location priority tests
+python3 test_url_hints.py     # URL hint tests
+python3 test_patch.py         # tech-giant adapters and collapse tests
 python3 poll_jobs.py --dry-run --no-notify
 ```
 
@@ -57,7 +60,7 @@ The rules are tuned to my own search. **See [CUSTOMIZE.md](CUSTOMIZE.md)** for e
 - `data/companies.json`: the scan list (an example with 9 companies across different ATS types is included). Build your own with `discover_ats.py`.
 - `data/company_rules.json`: exclusions, aliases and scoring weights for `suggest_companies.py`.
 - `jd_rules.py`: the screening rules. Edit them to match your own constraints.
-- Title, location and relocation rules live at the top of `poll_jobs.py` and `job_filters.py`.
+- Title and location rules live at the top of `poll_jobs.py`, `job_filters.py`, `location_rules.py` and `priorities.py`.
 
 Personal data (application tracker, results, logs, saved pages) stays in `data/` and `out/` locally and is git-ignored.
 
