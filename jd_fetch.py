@@ -1,5 +1,5 @@
 """
-jd_fetch.py - gets the text of each NEW job ad and runs jd_screen on it (Stage A, 13.10.2026).
+jd_fetch.py - gets the text of each NEW job ad and runs jd_screen on it.
 
 Called from poll_jobs.py after the daily filters, only for postings that are new today (about 10-60 per day).
 Order of sources for one posting:
@@ -19,6 +19,7 @@ from typing import Callable, Optional
 
 import requests
 
+import i18n
 import jd_screen
 
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -238,10 +239,10 @@ def enrich_and_screen(postings: list, log: Callable[[str], None], out_dir: Optio
 
 
 def write_review(postings: list, path: Path) -> None:
-    """Short list for Mykola: what the code will skip and why, so wrong skips are caught in the first two weeks."""
+    """Short list for the user: what the code will skip and why, so wrong skips are caught in the first weeks."""
     from datetime import date
     lines = ["# JD screen %s" % date.today().isoformat(), ""]
-    for verdict, title in (("wall", "Авто-skip (стіна)"), ("ask", "Перевір сам"), ("nojd", "Текст не завантажено")):
+    for verdict, title in (("wall", i18n.t("jd.review.wall")), ("ask", i18n.t("jd.review.ask")), ("nojd", i18n.t("jd.review.nojd"))):
         rows = [p for p in postings if p.get("jd_verdict") == verdict]
         lines.append("## %s: %d" % (title, len(rows)))
         for p in rows:
@@ -250,7 +251,7 @@ def write_review(postings: list, path: Path) -> None:
             if verdict != "nojd":
                 for h in p["_jd_res"]["hits"]:
                     if h["level"] in ("wall", "ask"):
-                        lines.append("    - %s: %s — «%s»" % ("стіна" if h["level"] == "wall" else "перевір", h["label"], h["quote"][:200]))
+                        lines.append("    - %s: %s — «%s»" % (i18n.t("jd.tag.wall") if h["level"] == "wall" else i18n.t("jd.tag.ask"), h["label"], h["quote"][:200]))
         lines.append("")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines), encoding="utf-8")

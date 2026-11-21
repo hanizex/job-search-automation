@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-discover_careers.py - one-off helper (12.10). For each company in data/target_companies_ua.json:
+discover_careers.py - one-off helper . For each company in data/target_companies_ua.json:
   1. downloads its careers page once into samples/careers/<name>.html
   2. looks for a known ATS inside the page (Greenhouse, Lever, Ashby, Workable, SmartRecruiters,
      Teamtailor, Recruitee, Breezy, Personio, Workday, Comeet, Oracle, SuccessFactors, BambooHR, Pinpoint)

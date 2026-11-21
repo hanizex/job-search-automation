@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One-off (13.10): counts job-alert emails from LinkedIn, jobs.bg and Welcome to the Jungle
+"""One-off : counts job-alert emails from LinkedIn, jobs.bg and Welcome to the Jungle
 in Gmail (last 30 days) and saves the 3 newest of each into samples/alerts/<source>/*.eml,
 so Claude can write parsers. Read-only. Same app password as the digest (.env)."""
 import email, imaplib

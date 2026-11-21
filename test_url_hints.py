@@ -1,4 +1,5 @@
 """Offline tests for url_hints.py, using URLs and titles taken from live boards. Run: python3 test_url_hints.py"""
+import testsupport  # noqa: F401  (selects the example profile)
 import unittest
 
 import url_hints as uh

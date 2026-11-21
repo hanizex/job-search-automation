@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-fetch_funding_samples.py - one-off helper (12.10). Saves one copy of each candidate
+fetch_funding_samples.py - one-off helper . Saves one copy of each candidate
 funding / grant news feed into samples/funding/, so Claude can check which feeds exist
 and write the parser against real data. Run once on the Mac:  python3 fetch_funding_samples.py
 ~20 requests, 2 s apart. Changes nothing else.

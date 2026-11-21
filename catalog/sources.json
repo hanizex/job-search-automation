@@ -1,0 +1,587 @@
+{
+ "version": 1,
+ "checked": "2026-11-22",
+ "boards": {
+  "dou": "DOU (jobs.dou.ua) category feeds: https://jobs.dou.ua/vacancies/feeds/?category=<term>. Any search term works (checked: 'Python Developer', 'project manager', 'Cloud'); an unknown term returns an empty feed. A feed carries the latest 25 vacancies and the ad text.",
+  "djinni": "Djinni (djinni.co) list pages: https://djinni.co/jobs/?primary_keyword=<keyword>. ONLY the keywords below filter the list. An unknown keyword silently returns the unfiltered latest jobs, so the profile validator rejects it.",
+  "dev.bg": "DEV.BG Bulgarian lists (author-specific, off by default)",
+  "dou_companies": "DOU company feeds from data/dou_company_feeds.json (author-specific, off by default)",
+  "igaming_sites": "A few iGaming company career pages (author-specific, off by default)",
+  "mymanager_email": "My Manager alert e-mails read from the inbox (author-specific, off by default)",
+  "linkedin_alerts": "LinkedIn job-alert e-mails read from the inbox (off by default)"
+ },
+ "dou_terms": [
+  "Project Manager",
+  "Product Manager",
+  "Front End",
+  "Java",
+  ".NET",
+  "Python",
+  "PHP",
+  "Node.js",
+  "Ruby",
+  "Scala",
+  "C++",
+  "Golang",
+  "Android",
+  "iOS",
+  "Embedded",
+  "Data Science",
+  "DevOps",
+  "QA",
+  "Design",
+  "Marketing",
+  "Sales",
+  "Support",
+  "HR",
+  "Business Analyst",
+  "Security",
+  "Sysadmin",
+  "Data Analyst",
+  "Data Engineer",
+  "Techwriter",
+  "Gamedev",
+  "Unity",
+  "Flutter",
+  "Database"
+ ],
+ "djinni_keywords": [
+  ".NET",
+  "Android",
+  "C++",
+  "Data Science",
+  "DevOps",
+  "Embedded",
+  "Flutter",
+  "Golang",
+  "iOS",
+  "Java",
+  "JavaScript",
+  "Node.js",
+  "PHP",
+  "Python",
+  "React Native",
+  "Ruby",
+  "Rust",
+  "Scala",
+  "QA Automation",
+  "Project Manager",
+  "Product Manager",
+  "Business Analyst",
+  "Data Analyst",
+  "Data Engineer",
+  "Marketing",
+  "HR",
+  "Sales Manager",
+  "Security",
+  "SQL",
+  "Unity",
+  "Game Design",
+  "Salesforce",
+  "SAP",
+  "Scrum Master",
+  "Product Owner",
+  "Delivery Manager",
+  "Fullstack",
+  "Accountant",
+  "Recruiter",
+  "Content Manager",
+  "SEO"
+ ],
+ "djinni_unverified": [
+  "Front End",
+  "QA Manual",
+  "UI/UX Design",
+  "Customer Support",
+  "Technical Support",
+  "Technical Writer",
+  "Machine Learning",
+  "Business Intelligence",
+  "Copywriter",
+  "Designer"
+ ],
+ "role_map": [
+  {
+   "match": [
+    "project manager",
+    "program manager",
+    "programme manager",
+    "delivery manager",
+    "delivery lead",
+    "head of delivery",
+    "delivery director",
+    "portfolio manager",
+    "engagement manager"
+   ],
+   "dou": [
+    "Project Manager"
+   ],
+   "djinni": [
+    "Project Manager",
+    "Delivery Manager"
+   ]
+  },
+  {
+   "match": [
+    "product manager",
+    "product owner",
+    "head of product",
+    "product lead",
+    "product director",
+    "director of product"
+   ],
+   "dou": [
+    "Product Manager"
+   ],
+   "djinni": [
+    "Product Manager",
+    "Product Owner"
+   ]
+  },
+  {
+   "match": [
+    "scrum master",
+    "agile coach",
+    "release manager"
+   ],
+   "dou": [
+    "Project Manager"
+   ],
+   "djinni": [
+    "Scrum Master"
+   ]
+  },
+  {
+   "match": [
+    "business analyst",
+    "system analyst"
+   ],
+   "dou": [
+    "Business Analyst"
+   ],
+   "djinni": [
+    "Business Analyst"
+   ]
+  },
+  {
+   "match": [
+    "data analyst",
+    "bi developer",
+    "bi analyst",
+    "analytics engineer"
+   ],
+   "dou": [
+    "Data Analyst"
+   ],
+   "djinni": [
+    "Data Analyst"
+   ]
+  },
+  {
+   "match": [
+    "data engineer",
+    "etl developer"
+   ],
+   "dou": [
+    "Data Engineer"
+   ],
+   "djinni": [
+    "Data Engineer"
+   ]
+  },
+  {
+   "match": [
+    "data scientist",
+    "machine learning",
+    "ml engineer",
+    "ai engineer"
+   ],
+   "dou": [
+    "Data Science"
+   ],
+   "djinni": [
+    "Data Science"
+   ]
+  },
+  {
+   "match": [
+    "python",
+    "django",
+    "fastapi",
+    "flask"
+   ],
+   "dou": [
+    "Python"
+   ],
+   "djinni": [
+    "Python"
+   ]
+  },
+  {
+   "match": [
+    "java developer",
+    "java engineer",
+    "java",
+    "spring boot"
+   ],
+   "dou": [
+    "Java"
+   ],
+   "djinni": [
+    "Java"
+   ]
+  },
+  {
+   "match": [
+    "javascript",
+    "typescript",
+    "react",
+    "vue",
+    "angular",
+    "front end",
+    "frontend",
+    "front-end"
+   ],
+   "dou": [
+    "Front End"
+   ],
+   "djinni": [
+    "JavaScript"
+   ]
+  },
+  {
+   "match": [
+    ".net",
+    "c#",
+    "dotnet",
+    "asp.net"
+   ],
+   "dou": [
+    ".NET"
+   ],
+   "djinni": [
+    ".NET"
+   ]
+  },
+  {
+   "match": [
+    "node.js",
+    "nodejs",
+    "node developer",
+    "nestjs"
+   ],
+   "dou": [
+    "Node.js"
+   ],
+   "djinni": [
+    "Node.js"
+   ]
+  },
+  {
+   "match": [
+    "php",
+    "laravel",
+    "symfony"
+   ],
+   "dou": [
+    "PHP"
+   ],
+   "djinni": [
+    "PHP"
+   ]
+  },
+  {
+   "match": [
+    "golang",
+    "go developer",
+    "go engineer"
+   ],
+   "dou": [
+    "Golang"
+   ],
+   "djinni": [
+    "Golang"
+   ]
+  },
+  {
+   "match": [
+    "ruby",
+    "rails"
+   ],
+   "dou": [
+    "Ruby"
+   ],
+   "djinni": [
+    "Ruby"
+   ]
+  },
+  {
+   "match": [
+    "scala"
+   ],
+   "dou": [
+    "Scala"
+   ],
+   "djinni": [
+    "Scala"
+   ]
+  },
+  {
+   "match": [
+    "c++",
+    "embedded",
+    "firmware"
+   ],
+   "dou": [
+    "C++",
+    "Embedded"
+   ],
+   "djinni": [
+    "C++",
+    "Embedded"
+   ]
+  },
+  {
+   "match": [
+    "rust"
+   ],
+   "dou": [
+    "Rust"
+   ],
+   "djinni": [
+    "Rust"
+   ]
+  },
+  {
+   "match": [
+    "ios",
+    "swift"
+   ],
+   "dou": [
+    "iOS"
+   ],
+   "djinni": [
+    "iOS"
+   ]
+  },
+  {
+   "match": [
+    "android",
+    "kotlin"
+   ],
+   "dou": [
+    "Android"
+   ],
+   "djinni": [
+    "Android"
+   ]
+  },
+  {
+   "match": [
+    "flutter"
+   ],
+   "dou": [
+    "Flutter"
+   ],
+   "djinni": [
+    "Flutter"
+   ]
+  },
+  {
+   "match": [
+    "react native"
+   ],
+   "dou": [
+    "Front End"
+   ],
+   "djinni": [
+    "React Native"
+   ]
+  },
+  {
+   "match": [
+    "fullstack",
+    "full stack",
+    "full-stack"
+   ],
+   "dou": [
+    "Front End",
+    "Node.js"
+   ],
+   "djinni": [
+    "Fullstack"
+   ]
+  },
+  {
+   "match": [
+    "devops",
+    "sre",
+    "site reliability",
+    "platform engineer",
+    "cloud engineer",
+    "infrastructure engineer"
+   ],
+   "dou": [
+    "DevOps"
+   ],
+   "djinni": [
+    "DevOps"
+   ]
+  },
+  {
+   "match": [
+    "qa",
+    "test engineer",
+    "tester",
+    "sdet",
+    "quality assurance"
+   ],
+   "dou": [
+    "QA"
+   ],
+   "djinni": [
+    "QA Automation"
+   ]
+  },
+  {
+   "match": [
+    "security",
+    "cybersecurity",
+    "pentest"
+   ],
+   "dou": [
+    "Security"
+   ],
+   "djinni": [
+    "Security"
+   ]
+  },
+  {
+   "match": [
+    "sql",
+    "database",
+    "dba"
+   ],
+   "dou": [
+    "Database"
+   ],
+   "djinni": [
+    "SQL"
+   ]
+  },
+  {
+   "match": [
+    "unity",
+    "game developer",
+    "gamedev"
+   ],
+   "dou": [
+    "Unity",
+    "Gamedev"
+   ],
+   "djinni": [
+    "Unity",
+    "Game Design"
+   ]
+  },
+  {
+   "match": [
+    "sap"
+   ],
+   "dou": [
+    "SAP"
+   ],
+   "djinni": [
+    "SAP"
+   ]
+  },
+  {
+   "match": [
+    "salesforce"
+   ],
+   "dou": [
+    "Salesforce"
+   ],
+   "djinni": [
+    "Salesforce"
+   ]
+  },
+  {
+   "match": [
+    "designer",
+    "ux",
+    "ui",
+    "product designer"
+   ],
+   "dou": [
+    "Design"
+   ],
+   "djinni": []
+  },
+  {
+   "match": [
+    "marketing",
+    "growth",
+    "seo",
+    "content manager"
+   ],
+   "dou": [
+    "Marketing"
+   ],
+   "djinni": [
+    "Marketing",
+    "SEO",
+    "Content Manager"
+   ]
+  },
+  {
+   "match": [
+    "sales",
+    "account executive",
+    "business development"
+   ],
+   "dou": [
+    "Sales"
+   ],
+   "djinni": [
+    "Sales Manager"
+   ]
+  },
+  {
+   "match": [
+    "hr",
+    "recruiter",
+    "talent acquisition"
+   ],
+   "dou": [
+    "HR"
+   ],
+   "djinni": [
+    "HR",
+    "Recruiter"
+   ]
+  },
+  {
+   "match": [
+    "support",
+    "customer success"
+   ],
+   "dou": [
+    "Support"
+   ],
+   "djinni": []
+  },
+  {
+   "match": [
+    "accountant",
+    "accounting"
+   ],
+   "dou": [
+    "Accounting"
+   ],
+   "djinni": [
+    "Accountant"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,112 @@
+{
+ "version": 1,
+ "name": "Example: EU-remote project manager based in Sofia",
+ "ui_language": "en",
+ "roles": {
+  "titles": [
+   "delivery manager",
+   "project manager",
+   "program manager",
+   "technical program manager",
+   "product manager",
+   "engagement manager",
+   "delivery lead",
+   "head of delivery",
+   "portfolio manager",
+   "product owner",
+   "product lead",
+   "head of product",
+   "product director",
+   "director product",
+   "director of product",
+   "scrum master",
+   "release manager",
+   "programme manager",
+   "проєктн",
+   "проектн",
+   "менеджер проє",
+   "менеджер прое",
+   "продакт",
+   "delivery director",
+   "integration manager",
+   "керівник проє",
+   "керівник прое"
+  ],
+  "exclude_title_words": [
+   "intern",
+   "internship",
+   "junior",
+   "associate",
+   "graduate",
+   "grad",
+   "trainee",
+   "marketing",
+   "coordinator",
+   "course",
+   "training program",
+   "learning",
+   "returns",
+   "servicenow",
+   "itsm",
+   "trading",
+   "derivatives"
+  ]
+ },
+ "languages": {
+  "spoken": [
+   "english",
+   "ukrainian",
+   "russian"
+  ]
+ },
+ "location": {
+  "home_country": "bulgaria",
+  "home_extra_places": [],
+  "relocation": [
+   "@eu"
+  ],
+  "relocation_secondary": [
+   "@protected_non_eu"
+  ],
+  "excluded": [
+   "germany",
+   "ukraine"
+  ],
+  "show_p3": false
+ },
+ "companies": {
+  "exclude": {}
+ },
+ "background": {
+  "certificates": [],
+  "domains": [],
+  "eu_citizen": false,
+  "avoid_ties": [
+   "russia"
+  ]
+ },
+ "sources": {
+  "boards": [
+   "dev.bg",
+   "dou",
+   "djinni",
+   "dou_companies",
+   "igaming_sites",
+   "mymanager_email",
+   "linkedin_alerts"
+  ],
+  "dou": [
+   "Project Manager",
+   "Product Manager"
+  ],
+  "djinni": [
+   "Project Manager",
+   "Product Manager",
+   "Delivery Manager"
+  ]
+ },
+ "features": {
+  "signals": true,
+  "replies": true
+ }
+}

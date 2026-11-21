@@ -1,4 +1,5 @@
 """python3 test_jd_screen.py  - checks the wall rules on real and synthetic ad texts."""
+import testsupport  # noqa: F401  (selects the example profile)
 import sys
 import jd_screen as S
 

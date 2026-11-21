@@ -1,7 +1,7 @@
 """
 Collapse multi-country duplicates inside a single import.
 
-New file, 25.10.2026. Standard library only, Python 3.9+.
+Standard library only, Python 3.9+.
 
 Large employers publish one requisition once per country, one row per country.
 Elastic's "Senior Product Manager (XDR)" appears six times: Spain, Ireland,

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-fetch_samples.py - one-off helper (11.10). Downloads ONE copy of each job-board listing page
+fetch_samples.py - one-off helper . Downloads ONE copy of each job-board listing page
 into samples/, so Claude can read the real page structure and write board parsers.
 Run once on the Mac:  python3 fetch_samples.py
 It makes ~16 requests, 3 seconds apart, and changes nothing else.

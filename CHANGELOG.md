@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.3.0 - 2026-11-22
+
+The engine no longer carries any personal preferences. Everything personal is in a search profile.
+
+### Added
+- **Search profile** (`profile.json`, `--profile`, `$JSE_PROFILE`): roles, languages spoken, home country, relocation zones, excluded places, companies, certificates and industries you hold, EU citizenship, job boards and optional features. Written by an AI assistant after an interview, never by hand. Plain-language validation (`search_profile.py`, `profiles/profile.schema.json`, `profiles/README.md`) and two examples.
+- **Geography catalogue** (`geo/places.json`, `geo.py`): 78 countries with names, cities and regions, groups such as `@eu`, marker groups, language names.
+- **Ad screening in two steps**: `jd_screen.extract_signals` reads an ad once; `jd_screen.match` judges it for a profile. Rules carry English and Ukrainian labels and a condition for when they apply. New rule for "remote only within one country". Residency patterns cover every catalogued country; Ukrainian and Russian are checked as required languages.
+- **Sources catalogue** (`catalog/sources.json`, `sources.py`): DOU search terms (any term works) and 41 verified Djinni keywords; a role map derives the searches from job titles.
+- **`i18n.py`**: user-facing texts in English and Ukrainian, selected by `ui_language`.
+- **Offline demo** (`demo_offline.py`, `fixtures/`, `examples/`): the whole filtering chain on invented postings.
+- Tests: `test_profile.py`, `test_screen_profiles.py`, `test_sources.py`, `test_demo.py`.
+- `docs/ARCHITECTURE.md`; PolyForm Noncommercial 1.0.0 licence.
+
+### Changed
+- Location priority, language and off-scope title filters, company exclusions and the first location pass read the profile instead of constants. Remote jobs scoped to another region are no longer P1.
+- `sources.boards` decides which boards are read (default `dou`, `djinni`); author-specific boards are off by default. `features.signals` and `features.replies` are off by default.
+- Labels and reports are in English by default.
+- README, CUSTOMIZE and comments rewritten for general use.
+
+### Fixed
+- SmartRecruiters repeated pages are retried like Workday's (the list used to stop at 300 postings).
+- Sorting no longer fails when e-mail sources give timezone-aware dates.
+- "Ukraine; Remote, anywhere" is P1 instead of being dropped as "Ukraine only".
+- Greenhouse EU boards use the standard API host.
+
+### Removed
+- The retired relocation watch.
+
 ## 0.2.1 - 2026-10-27
 
 ### Fixed

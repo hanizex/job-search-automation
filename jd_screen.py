@@ -1,9 +1,14 @@
 """
-jd_screen.py - reads the BODY of a job ad and says: wall / ask / ok (Stage A, 13.10.2026).
+jd_screen.py - reads the BODY of a job ad and says: wall / ask / ok.
 
-Plain code, no AI, no network. Rules live in jd_rules.py.
-  screen(text) -> {"verdict": "wall"|"ask"|"ok"|"nojd", "hits": [{id,label,level,quote}], "chars": N, "ad_lang": ""}
-  why(result)  -> one Ukrainian line for the tracker card
+Plain code, no AI, no network. Rules live in jd_rules.py. Two steps, so a shared service can read an ad once and
+judge it for many people:
+  extract_signals(text)      -> what the ad demands (residency, languages, certificates, domains, office...).
+                                Independent of any person. Do this once per ad.
+  match(extracted, profile)  -> {"verdict": "wall"|"ask"|"ok"|"nojd", "hits": [{id,label,level,quote}], "chars": N, "ad_lang": ""}
+                                Judges those demands against one search profile (search_profile.py). Cheap.
+  screen(text)               -> match(extract_signals(text)) with the active profile.
+  why(result)                -> one short line for the tracker card, in the profile's ui_language
 Python 3.9 compatible, no extra dependencies.
 """
 from __future__ import annotations
@@ -11,7 +16,9 @@ from __future__ import annotations
 import html as H
 import re
 
+import geo
 import jd_rules as R
+import search_profile
 
 MIN_CHARS = 250          # shorter text = we did not really get the ad
 MAX_STORE = 12000        # what we keep in the tracker `jd` field
@@ -149,16 +156,18 @@ def ad_language(text: str) -> str:
     return ""
 
 
-def screen(raw: str, already_clean: bool = False) -> dict:
+def extract_signals(raw: str, already_clean: bool = False) -> dict:
+    """Read the ad once. Returns the raw demands; nothing here depends on who is applying."""
     text = raw if already_clean else clean_text(raw)
     text = strip_related(text)
-    res = {"verdict": "nojd", "hits": [], "chars": len(text), "ad_lang": ""}
+    out = {"nojd": True, "chars": len(text), "ad_lang": "", "signals": [], "has_remote": False, "text": text}
     if len(text) < MIN_CHARS:
-        return res
+        return out
+    out["nojd"] = False
     units = _units(text)
-    has_sofia = bool(R.SOFIA.search(text))
-    has_remote = bool(R.REMOTE.search(text))
-    best = {}                                   # group -> hit (strongest level, first quote)
+    out["has_remote"] = bool(R.REMOTE.search(text))
+    out["ad_lang"] = ad_language(text)
+    seen = {}                                   # (rule id, subject) -> signal (strongest level, first quote)
     for rule in R.RULES:
         for ui, (unit, section) in enumerate(units):
             for rx in rule["rx"]:
@@ -182,24 +191,77 @@ def screen(raw: str, already_clean: bool = False) -> dict:
                         continue
                     if R.REMOTE.search(unit) and not re.search(r"\d\s*(?:[-–]\s*\d\s*)?(?:days?|дн|dni)", unit, re.I):
                         continue          # "remote, hybrid or office" = a choice
-                    level = "note" if has_sofia else ("ask" if has_remote else "wall")
+                    level = "office"      # decided in match(): note if the ad names the home place, else ask/wall
                 else:
                     level = _level(rule, unit, section, m)
                 if level is None:
                     continue
-                hit = {"id": rule["id"], "label": rule["label"], "level": level, "quote": _quote(unit, m)}
-                old = best.get(rule["group"])
-                if old is None or _LEVEL_RANK[level] > _LEVEL_RANK[old["level"]]:
-                    best[rule["group"]] = hit
+                subject = rule["needs"][1] if len(rule["needs"]) > 1 else None
+                if subject is None and rule["needs"][0] == "residency":
+                    subject = geo.country_in(m.group(0))
+                elif subject is None and rule["needs"][0] == "language":
+                    subject = geo.language_in(m.group(0))
+                sig = {"id": rule["id"], "label": rule["label"], "label_uk": rule["label_uk"], "group": rule["group"],
+                       "level": level, "quote": _quote(unit, m), "needs": rule["needs"][0], "subject": subject}
+                key = (rule["id"], subject)
+                old = seen.get(key)
+                if old is None or _LEVEL_RANK.get(level, 0) > _LEVEL_RANK.get(old["level"], 0):
+                    seen[key] = sig
                 break                           # one pattern per sentence is enough
-    lang = ad_language(text)
-    res["ad_lang"] = lang
-    if lang == "pl":
-        best["adlang"] = {"id": "ad_polish", "label": "Оголошення написане польською (мова роботи майже завжди польська)",
-                          "level": "ask", "quote": text[:140].replace("\n", " ")}
-    elif lang == "de":
-        best["adlang"] = {"id": "ad_german", "label": "Оголошення написане німецькою (мова роботи майже завжди німецька)",
-                          "level": "ask", "quote": text[:140].replace("\n", " ")}
+    out["signals"] = list(seen.values())
+    return out
+
+
+def _applies(sig: dict, cfg) -> bool:
+    """Does this demand stand in this person's way?"""
+    need, subject = sig["needs"], sig["subject"]
+    if need == "residency":
+        return subject is None or subject != cfg.home
+    if need == "language":
+        return subject is None or subject not in cfg.spoken
+    if need == "cert":
+        return subject not in cfg.certificates
+    if need == "domain":
+        return subject not in cfg.domains
+    if need in ("eu_citizen", "eu_right"):
+        return not cfg.eu_citizen
+    if need == "avoid":
+        return subject in cfg.avoid_ties
+    return True            # always, office
+
+
+def match(extracted: dict, cfg=None) -> dict:
+    """Judge extracted demands against one profile (default: the active one)."""
+    cfg = cfg or search_profile.compiled()
+    uk = cfg.ui_language == "uk"
+    res = {"verdict": "nojd", "hits": [], "chars": extracted["chars"], "ad_lang": extracted["ad_lang"]}
+    if extracted["nojd"]:
+        return res
+    text = extracted["text"]
+    best = {}                                   # group -> hit (strongest level, first quote)
+
+    def keep(group, hit):
+        old = best.get(group)
+        if old is None or _LEVEL_RANK[hit["level"]] > _LEVEL_RANK[old["level"]]:
+            best[group] = hit
+
+    for sig in extracted["signals"]:
+        if not _applies(sig, cfg):
+            continue
+        level = sig["level"]
+        if level == "office":
+            level = "note" if cfg.home_ad_re.search(text) else ("ask" if extracted["has_remote"] else "wall")
+        keep(sig["group"], {"id": sig["id"], "label": sig["label_uk"] if uk else sig["label"], "level": level, "quote": sig["quote"]})
+    lang = extracted["ad_lang"]
+    snippet = text[:140].replace("\n", " ")
+    if lang == "pl" and "polish" not in cfg.spoken:
+        keep("adlang", {"id": "ad_polish", "level": "ask", "quote": snippet,
+                        "label": "Оголошення написане польською (мова роботи майже завжди польська)" if uk
+                        else "The ad is written in Polish (the working language is almost always Polish)"})
+    elif lang == "de" and "german" not in cfg.spoken:
+        keep("adlang", {"id": "ad_german", "level": "ask", "quote": snippet,
+                        "label": "Оголошення написане німецькою (мова роботи майже завжди німецька)" if uk
+                        else "The ad is written in German (the working language is almost always German)"})
     hits = sorted(best.values(), key=lambda h: -_LEVEL_RANK[h["level"]])
     res["hits"] = hits
     levels = {h["level"] for h in hits}
@@ -207,12 +269,19 @@ def screen(raw: str, already_clean: bool = False) -> dict:
     return res
 
 
-def why(res: dict, max_items: int = 3) -> str:
-    """One short Ukrainian line for the card note."""
+def screen(raw: str, already_clean: bool = False) -> dict:
+    return match(extract_signals(raw, already_clean))
+
+
+def why(res: dict, max_items: int = 3, lang: str = None) -> str:
+    """One short line for the card note, in the profile's ui_language unless lang is given."""
+    lang = lang or search_profile.compiled().ui_language
+    uk = lang == "uk"
     if res["verdict"] == "nojd":
-        return "Опис не завантажено: відкрий сторінку й прочитай сам."
+        return ("Опис не завантажено: відкрий сторінку й прочитай сам." if uk
+                else "The description was not loaded: open the page and read it yourself.")
     items = [h for h in res["hits"] if h["level"] in ("wall", "ask")][:max_items]
     if not items:
         return ""
-    tag = {"wall": "Стіна", "ask": "Перевір"}
-    return "; ".join("%s: %s — «%s»" % (tag[h["level"]], h["label"], h["quote"][:160]) for h in items)
+    tag = {"wall": "Стіна", "ask": "Перевір"} if uk else {"wall": "Wall", "ask": "Check"}
+    return "; ".join("%s: %s - \"%s\"" % (tag[h["level"]], h["label"], h["quote"][:160]) for h in items)

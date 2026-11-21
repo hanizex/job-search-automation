@@ -80,6 +80,9 @@ WORKDAY_PAGE_SIZE = 20  # confirmed hard cap: anything higher returns 0 results
 # side, not the end of the list (confirmed live on Workday: the same request answered with a
 # repeated page, and a retry returned the next page). Re-ask this many times, then give up.
 WORKDAY_REPEAT_RETRIES = 2
+# SmartRecruiters showed the same glitch in 2026-10: repeated pages at offsets 300, 500, 800...
+# that a second request clears. Without retries the list stopped at 300 postings.
+SMARTRECRUITERS_REPEAT_RETRIES = 2
 PAGE_RETRY_SLEEP_SECONDS = 3.0
 SMARTRECRUITERS_PAGE_SIZE = 100  # confirmed hard cap regardless of requested limit
 AMAZON_PAGE_SIZE = 100
@@ -356,7 +359,8 @@ def fetch_smartrecruiters_all(slug: str) -> FetchResult:
             return None
         return data.get("content") or [], data.get("totalFound")
 
-    return _paginate(page, page_size=SMARTRECRUITERS_PAGE_SIZE, id_key=lambda j: j.get("id", ""))
+    return _paginate(page, page_size=SMARTRECRUITERS_PAGE_SIZE, id_key=lambda j: j.get("id", ""),
+                     repeat_retries=SMARTRECRUITERS_REPEAT_RETRIES)
 
 
 # ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 """
-signals.py - funding / grant signals for consulting and job leads (12.10.2026).
+signals.py - funding / grant signals for consulting and job leads (optional feature, features.signals).
 
 Reads European, CEE and Ukrainian startup news feeds once a day, keeps only items that say
 a company got money (round, investment, grant), extracts company / amount / round / country /
@@ -7,7 +7,7 @@ sector, tags priority sectors, and writes:
   data/signals_pool.json      - everything seen in the last 30 days (dedupe)
   out/signals_latest.json     - last 14 days, for the tracker's "Інвестиції" tab (autoimport)
   out/signals_latest.md       - human-readable list
-Decisions (Mykola, 12.10): regions Europe + Ukraine + Bulgaria/CEE (USA later); all amounts;
+Decisions: regions Europe + Ukraine + Bulgaria/CEE (USA later); all amounts;
 priority sectors iGaming, E-commerce, EdTech, HRTech, FinTech, Payments, Mobile apps, R&D, AI;
 everything else goes to the watch list. Big grants / big rounds are flagged as EUR 200/h candidates.
 No AI. Python 3.9, needs only requests.
@@ -22,6 +22,10 @@ from datetime import date, datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Callable, List, Optional
+
+import i18n
+
+NO_COMPANY = i18n.all_forms("signals.no_company")   # the placeholder is stored in the pool in the language it was written in
 
 import requests
 
@@ -175,7 +179,7 @@ def classify(title: str, cats: List[str], desc: str, source: str) -> Optional[di
     rnd = ROUND.search(title) or ROUND.search(desc[:400])
     tier = "premium" if (grant and (amt or 0) >= 1) or (amt or 0) >= 10 else "standard"
     return {
-        "company": company or "(див. новину)", "amount_eur_m": amt, "round": rnd.group(1) if rnd else "",
+        "company": company or i18n.t("signals.no_company"), "amount_eur_m": amt, "round": rnd.group(1) if rnd else "",
         "grant": grant, "country": country, "sectors": sectors,
         "priority": bool(set(sectors) & PRIORITY_SECTORS), "tier": tier,
     }
@@ -224,10 +228,10 @@ def run(log: Callable[[str], None], data_dir: Path = Path("data"), out_dir: Path
         for s in got:
             key = s["url"] or s["title"]
             tkey = re.sub(r"\W+", " ", s["company"].lower()).strip() + "|" + str(s["amount_eur_m"])
-            if key in pool or any(v.get("_tkey") == tkey and s["company"] != "(див. новину)" for v in pool.values()):
+            if key in pool or any(v.get("_tkey") == tkey and s["company"] not in NO_COMPANY for v in pool.values()):
                 continue  # same deal reported by two outlets
             s["_tkey"], s["found"] = tkey, today
-            co = s["company"] if s["company"] != "(див. новину)" else ""
+            co = s["company"] if s["company"] not in NO_COMPANY else ""
             s["li_ceo"], s["li_founder"], s["li_coo"] = (li_search(co, "CEO"), li_search(co, "founder"),
                                                          li_search(co, "COO")) if co else ("", "", "")
             pool[key] = s
@@ -241,12 +245,11 @@ def run(log: Callable[[str], None], data_dir: Path = Path("data"), out_dir: Path
                    key=lambda v: (not v["priority"], v["tier"] != "premium", -(v["amount_eur_m"] or 0)))
     clean = [{k: v for k, v in it.items() if not k.startswith("_")} for it in items]
     (out_dir / "signals_latest.json").write_text(json.dumps(clean, ensure_ascii=False, indent=1), encoding="utf-8")
-    lines = [f"# Сигнали: хто отримав гроші ({today})", "",
-             "| Компанія | Сума, млн € | Раунд | Країна | Сфери | Пріоритет | Новина |", "|---|---|---|---|---|---|---|"]
+    lines = [i18n.t("signals.title", today=today), "", i18n.t("signals.header"), "|---|---|---|---|---|---|---|"]
     for it in clean:
-        lines.append(f"| {it['company']} | {it['amount_eur_m'] or ''} | {'грант' if it['grant'] else it['round']} | "
+        lines.append(f"| {it['company']} | {it['amount_eur_m'] or ''} | {i18n.t('signals.grant') if it['grant'] else it['round']} | "
                      f"{it['country']} | {', '.join(it['sectors'])} | "
-                     f"{'€200/год' if it['tier'] == 'premium' else ''}{' ★' if it['priority'] else ' спостереження'} | "
+                     f"{i18n.t('signals.premium') if it['tier'] == 'premium' else ''}{' ★' if it['priority'] else i18n.t('signals.watch')} | "
                      f"[{it['source']}]({it['url']}) |")
     (out_dir / "signals_latest.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     log(f"Signals: {new} new, {len(clean)} in the last {KEEP_OUT_DAYS} days")

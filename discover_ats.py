@@ -919,7 +919,7 @@ def main():
     if not args.list.exists():
         sys.exit(f"Company list not found: {args.list}")
 
-    # Guard (11.10): companies.json is now also maintained by suggest_companies.py
+    # Guard : companies.json is now also maintained by suggest_companies.py
     # and has hand-excluded rows. A full rebuild here would silently wipe both.
     if args.out.exists() and "--force" not in sys.argv:
         current = json.loads(args.out.read_text(encoding="utf-8"))

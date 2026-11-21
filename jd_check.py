@@ -1,6 +1,6 @@
 """
-jd_check.py - safe first test of Stage A on the real internet.
-Reads out/import_latest.json (the postings Agent 1 already found), downloads each ad page, screens it,
+jd_check.py - safe first test of screening on the real internet.
+Reads out/import_latest.json (the postings the engine already found), downloads each ad page, screens it,
 prints a table and writes out/jd_check.md. It changes NOTHING else (no seen.json, no email, no tracker).
 Run:  cd ~/jobsearch && python3 jd_check.py          (about 1-5 minutes)
       python3 jd_check.py 20                          (only the first 20 rows)

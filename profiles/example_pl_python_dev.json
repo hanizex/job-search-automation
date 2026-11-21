@@ -1,0 +1,67 @@
+{
+ "version": 1,
+ "name": "Invented example: Python developer based in Warsaw",
+ "ui_language": "en",
+ "roles": {
+  "titles": [
+   "python developer",
+   "backend developer",
+   "backend engineer",
+   "software engineer",
+   "django",
+   "fastapi"
+  ],
+  "exclude_title_words": [
+   "intern",
+   "internship",
+   "junior",
+   "trainee",
+   "sales",
+   "support"
+  ]
+ },
+ "languages": {
+  "spoken": [
+   "english",
+   "polish"
+  ]
+ },
+ "location": {
+  "home_country": "poland",
+  "home_extra_places": [],
+  "relocation": [
+   "@eu"
+  ],
+  "relocation_secondary": [
+   "united kingdom",
+   "switzerland",
+   "norway"
+  ],
+  "excluded": [
+   "russia",
+   "belarus"
+  ],
+  "show_p3": false
+ },
+ "companies": {
+  "exclude": {
+   "example agency": "agency, no direct hiring"
+  }
+ },
+ "background": {
+  "certificates": [
+   "agile_certificates"
+  ],
+  "domains": [
+   "erp"
+  ],
+  "eu_citizen": true,
+  "avoid_ties": []
+ },
+ "sources": {
+  "boards": [
+   "dou",
+   "djinni"
+  ]
+ }
+}

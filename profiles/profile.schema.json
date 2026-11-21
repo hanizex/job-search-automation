@@ -1,0 +1,235 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Job Search Engine search profile",
+  "description": "Everything personal about what a good job means for one person. Written by an AI assistant after a short interview, not by hand.",
+  "type": "object",
+  "required": [
+    "version",
+    "roles",
+    "location"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "description": "Free text label for the profile."
+    },
+    "ui_language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "uk"
+      ],
+      "default": "en"
+    },
+    "roles": {
+      "type": "object",
+      "required": [
+        "titles"
+      ],
+      "properties": {
+        "titles": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "Job titles you look for. A posting passes when its title contains one of them (case-insensitive)."
+        },
+        "exclude_title_words": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Words that drop a title: seniority you do not want, other fields."
+        }
+      }
+    },
+    "languages": {
+      "type": "object",
+      "properties": {
+        "spoken": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Languages you work in. A language NOT listed that appears in a job title (for example 'German speaking') drops the job. Names come from geo/places.json."
+        }
+      }
+    },
+    "location": {
+      "type": "object",
+      "required": [
+        "home_country"
+      ],
+      "properties": {
+        "home_country": {
+          "type": "string",
+          "description": "Country you live in. Key from geo/places.json, for example 'poland'."
+        },
+        "home_extra_places": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Extra names that mean home: suburbs, regions."
+        },
+        "relocation": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Countries or groups (@eu) you could move to: priority P2."
+        },
+        "relocation_secondary": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Further countries you could move to under extra conditions: also P2."
+        },
+        "excluded": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Countries you never want: dropped everywhere. A row is dropped only when every place in it is excluded."
+        },
+        "scoped_out": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Marker groups of places that scope a remote job away from you. null = derived from the home country's region."
+        },
+        "scoped_out_names": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "show_p3": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show P3 (needs a visa, or the place is in none of your zones). Hidden by default."
+        }
+      }
+    },
+    "companies": {
+      "type": "object",
+      "properties": {
+        "exclude": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Companies you never want, with the reason: {\"Name\": \"reason\"}."
+        }
+      }
+    },
+    "sources": {
+      "type": "object",
+      "properties": {
+        "boards": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "dou",
+            "djinni"
+          ],
+          "description": "Job boards to read. Names are listed in catalog/sources.json. Default: dou, djinni."
+        },
+        "dou": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "DOU search terms (any term works). null = derived from roles.titles."
+        },
+        "djinni": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Djinni keywords. Only keywords from catalog/sources.json filter the list; unknown ones are rejected. null = derived from roles.titles."
+        }
+      }
+    },
+    "background": {
+      "type": "object",
+      "description": "What you already have, so that an ad demanding it does not count as a blocker.",
+      "properties": {
+        "certificates": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "pmp",
+              "pm_certificates",
+              "agile_certificates"
+            ]
+          },
+          "description": "Certificate families you hold: pmp; pm_certificates (PRINCE2, PM2, AgilePM, IPMA, Scrum...); agile_certificates (SAFe, CSM, PSM...)."
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "pharma",
+              "itsm",
+              "erp",
+              "infra",
+              "banking",
+              "govtech"
+            ]
+          },
+          "description": "Industries you have worked in. An ad that REQUIRES a domain you do not list is a wall."
+        },
+        "eu_citizen": {
+          "type": "boolean",
+          "default": false,
+          "description": "Citizen of an EU country: 'EU citizens only' and 'right to work in the EU' ads do not block you."
+        },
+        "avoid_ties": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "russia"
+            ]
+          },
+          "description": "Places whose ties in an ad you want to check first."
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "signals": {
+          "type": "boolean",
+          "default": false,
+          "description": "Funding and grant news as consulting or job leads (signals.py). Regions and sectors are set in that file."
+        },
+        "replies": {
+          "type": "boolean",
+          "default": false,
+          "description": "Read employer replies from your inbox, read-only (replies.py). Needs .env."
+        }
+      }
+    }
+  }
+}

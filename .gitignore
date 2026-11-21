@@ -12,3 +12,6 @@ samples/
 __pycache__/
 *.pyc
 .DS_Store
+
+# the user's own search profile
+profile.json

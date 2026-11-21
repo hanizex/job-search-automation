@@ -1,0 +1,1423 @@
+{
+ "version": 1,
+ "countries": {
+  "albania": {
+   "names": [
+    "albania"
+   ],
+   "cities": [],
+   "regions": [
+    "europe",
+    "european",
+    "emea"
+   ]
+  },
+  "argentina": {
+   "names": [
+    "argentina"
+   ],
+   "cities": [],
+   "regions": [
+    "americas",
+    "latam"
+   ]
+  },
+  "armenia": {
+   "names": [
+    "armenia"
+   ],
+   "cities": [
+    "yerevan"
+   ],
+   "regions": [
+    "emea"
+   ]
+  },
+  "australia": {
+   "names": [
+    "australia"
+   ],
+   "cities": [
+    "sydney",
+    "melbourne"
+   ],
+   "regions": [
+    "apac"
+   ]
+  },
+  "austria": {
+   "names": [
+    "austria"
+   ],
+   "cities": [
+    "vienna"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "bangladesh": {
+   "names": [
+    "bangladesh"
+   ],
+   "cities": [
+    "dhaka"
+   ],
+   "regions": [
+    "apac"
+   ]
+  },
+  "belarus": {
+   "names": [
+    "belarus"
+   ],
+   "cities": [
+    "minsk"
+   ],
+   "regions": [
+    "europe",
+    "emea"
+   ]
+  },
+  "belgium": {
+   "names": [
+    "belgium"
+   ],
+   "cities": [
+    "brussels"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "bosnia": {
+   "names": [
+    "bosnia"
+   ],
+   "cities": [],
+   "regions": [
+    "europe",
+    "european",
+    "emea"
+   ]
+  },
+  "brazil": {
+   "names": [
+    "brazil"
+   ],
+   "cities": [],
+   "regions": [
+    "americas",
+    "latam"
+   ]
+  },
+  "bulgaria": {
+   "names": [
+    "bulgaria",
+    "bgr"
+   ],
+   "cities": [
+    "burgas",
+    "plovdiv",
+    "ruse",
+    "sofia",
+    "varna"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ],
+   "local": [
+    "софі",
+    "софия",
+    "болгар",
+    "българия",
+    "bulgarian office"
+   ]
+  },
+  "canada": {
+   "names": [
+    "canada"
+   ],
+   "cities": [
+    "toronto",
+    "vancouver",
+    "montreal",
+    "ontario",
+    "quebec",
+    "british columbia",
+    "alberta",
+    "ottawa"
+   ],
+   "regions": [
+    "americas",
+    "north america",
+    "amer"
+   ]
+  },
+  "chile": {
+   "names": [
+    "chile"
+   ],
+   "cities": [],
+   "regions": [
+    "americas",
+    "latam"
+   ]
+  },
+  "china": {
+   "names": [
+    "china"
+   ],
+   "cities": [],
+   "regions": [
+    "apac"
+   ]
+  },
+  "colombia": {
+   "names": [
+    "colombia"
+   ],
+   "cities": [],
+   "regions": [
+    "americas",
+    "latam"
+   ]
+  },
+  "costa rica": {
+   "names": [
+    "costa rica"
+   ],
+   "cities": [],
+   "regions": [
+    "americas",
+    "latam"
+   ]
+  },
+  "croatia": {
+   "names": [
+    "croatia"
+   ],
+   "cities": [
+    "zagreb"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "cyprus": {
+   "names": [
+    "cyprus"
+   ],
+   "cities": [
+    "limassol",
+    "nicosia",
+    "paphos"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "czechia": {
+   "names": [
+    "czech republic",
+    "czechia"
+   ],
+   "cities": [
+    "prague",
+    "brno"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "denmark": {
+   "names": [
+    "denmark"
+   ],
+   "cities": [
+    "copenhagen"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "egypt": {
+   "names": [
+    "egypt"
+   ],
+   "cities": [
+    "cairo"
+   ],
+   "regions": [
+    "emea"
+   ]
+  },
+  "estonia": {
+   "names": [
+    "estonia"
+   ],
+   "cities": [
+    "tallinn"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "finland": {
+   "names": [
+    "finland"
+   ],
+   "cities": [
+    "helsinki"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "france": {
+   "names": [
+    "france"
+   ],
+   "cities": [
+    "paris",
+    "lyon",
+    "toulouse"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "georgia": {
+   "names": [
+    "georgia"
+   ],
+   "cities": [
+    "tbilisi"
+   ],
+   "regions": [
+    "emea"
+   ]
+  },
+  "germany": {
+   "names": [
+    "germany",
+    "deutschland"
+   ],
+   "cities": [
+    "berlin",
+    "cologne",
+    "dresden",
+    "dusseldorf",
+    "düsseldorf",
+    "erlangen",
+    "frankfurt",
+    "hamburg",
+    "köln",
+    "leipzig",
+    "munich",
+    "münchen",
+    "nuremberg",
+    "nürnberg",
+    "stuttgart",
+    "ulm",
+    "walldorf"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ],
+   "local": [
+    "deutschland"
+   ]
+  },
+  "greece": {
+   "names": [
+    "greece"
+   ],
+   "cities": [
+    "athens",
+    "thessaloniki"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "hong kong": {
+   "names": [
+    "hong kong"
+   ],
+   "cities": [],
+   "regions": [
+    "apac"
+   ]
+  },
+  "hungary": {
+   "names": [
+    "hungary"
+   ],
+   "cities": [
+    "budapest"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "iceland": {
+   "names": [
+    "iceland"
+   ],
+   "cities": [
+    "reykjavik",
+    "reykjavík"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eea"
+   ]
+  },
+  "india": {
+   "names": [
+    "india"
+   ],
+   "cities": [
+    "bangalore",
+    "bengaluru",
+    "pune",
+    "hyderabad"
+   ],
+   "regions": [
+    "apac"
+   ]
+  },
+  "indonesia": {
+   "names": [
+    "indonesia"
+   ],
+   "cities": [],
+   "regions": [
+    "apac"
+   ]
+  },
+  "ireland": {
+   "names": [
+    "ireland"
+   ],
+   "cities": [
+    "dublin",
+    "cork"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "israel": {
+   "names": [
+    "israel"
+   ],
+   "cities": [
+    "tel aviv"
+   ],
+   "regions": [
+    "emea"
+   ]
+  },
+  "italy": {
+   "names": [
+    "italy"
+   ],
+   "cities": [
+    "milan",
+    "rome",
+    "turin"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "japan": {
+   "names": [
+    "japan"
+   ],
+   "cities": [
+    "tokyo"
+   ],
+   "regions": [
+    "apac"
+   ]
+  },
+  "kazakhstan": {
+   "names": [
+    "kazakhstan"
+   ],
+   "cities": [
+    "almaty",
+    "astana"
+   ],
+   "regions": [
+    "apac",
+    "emea"
+   ]
+  },
+  "kenya": {
+   "names": [
+    "kenya"
+   ],
+   "cities": [
+    "nairobi"
+   ],
+   "regions": [
+    "emea"
+   ]
+  },
+  "korea": {
+   "names": [
+    "korea"
+   ],
+   "cities": [],
+   "regions": [
+    "apac"
+   ]
+  },
+  "latvia": {
+   "names": [
+    "latvia"
+   ],
+   "cities": [
+    "riga"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "liechtenstein": {
+   "names": [
+    "liechtenstein"
+   ],
+   "cities": [
+    "vaduz"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eea"
+   ]
+  },
+  "lithuania": {
+   "names": [
+    "lithuania"
+   ],
+   "cities": [
+    "vilnius",
+    "kaunas"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "luxembourg": {
+   "names": [
+    "luxembourg"
+   ],
+   "cities": [
+    "luxembourg city"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "malaysia": {
+   "names": [
+    "malaysia"
+   ],
+   "cities": [],
+   "regions": [
+    "apac"
+   ]
+  },
+  "malta": {
+   "names": [
+    "malta"
+   ],
+   "cities": [
+    "valletta"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "mexico": {
+   "names": [
+    "mexico"
+   ],
+   "cities": [],
+   "regions": [
+    "americas",
+    "latam"
+   ]
+  },
+  "moldova": {
+   "names": [
+    "moldova"
+   ],
+   "cities": [
+    "chisinau"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea"
+   ]
+  },
+  "montenegro": {
+   "names": [
+    "montenegro"
+   ],
+   "cities": [],
+   "regions": [
+    "europe",
+    "european",
+    "emea"
+   ]
+  },
+  "netherlands": {
+   "names": [
+    "netherlands"
+   ],
+   "cities": [
+    "amsterdam",
+    "rotterdam",
+    "eindhoven"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "new zealand": {
+   "names": [
+    "new zealand"
+   ],
+   "cities": [],
+   "regions": [
+    "apac"
+   ]
+  },
+  "nigeria": {
+   "names": [
+    "nigeria"
+   ],
+   "cities": [
+    "lagos"
+   ],
+   "regions": [
+    "emea"
+   ]
+  },
+  "north macedonia": {
+   "names": [
+    "north macedonia"
+   ],
+   "cities": [],
+   "regions": [
+    "europe",
+    "european",
+    "emea"
+   ]
+  },
+  "norway": {
+   "names": [
+    "norway"
+   ],
+   "cities": [
+    "oslo",
+    "bergen",
+    "trondheim"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eea"
+   ]
+  },
+  "pakistan": {
+   "names": [
+    "pakistan"
+   ],
+   "cities": [
+    "karachi",
+    "lahore"
+   ],
+   "regions": [
+    "apac"
+   ]
+  },
+  "peru": {
+   "names": [
+    "peru"
+   ],
+   "cities": [],
+   "regions": [
+    "americas",
+    "latam"
+   ]
+  },
+  "philippines": {
+   "names": [
+    "philippines"
+   ],
+   "cities": [],
+   "regions": [
+    "apac"
+   ]
+  },
+  "poland": {
+   "names": [
+    "poland"
+   ],
+   "cities": [
+    "warsaw",
+    "warszawa",
+    "krakow",
+    "kraków",
+    "wroclaw",
+    "gdansk",
+    "szczecin",
+    "poznan"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ],
+   "local": [
+    "polska",
+    "polsce",
+    "польщ",
+    "polski"
+   ]
+  },
+  "portugal": {
+   "names": [
+    "portugal"
+   ],
+   "cities": [
+    "lisbon",
+    "porto"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "romania": {
+   "names": [
+    "romania"
+   ],
+   "cities": [
+    "bucharest",
+    "cluj"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "russia": {
+   "names": [
+    "russia",
+    "russian federation"
+   ],
+   "cities": [
+    "moscow",
+    "saint petersburg",
+    "st. petersburg"
+   ],
+   "regions": [
+    "europe",
+    "emea"
+   ]
+  },
+  "saudi arabia": {
+   "names": [
+    "saudi arabia"
+   ],
+   "cities": [
+    "riyadh"
+   ],
+   "regions": [
+    "emea"
+   ]
+  },
+  "serbia": {
+   "names": [
+    "serbia"
+   ],
+   "cities": [
+    "belgrade"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea"
+   ]
+  },
+  "singapore": {
+   "names": [
+    "singapore"
+   ],
+   "cities": [],
+   "regions": [
+    "apac"
+   ]
+  },
+  "slovakia": {
+   "names": [
+    "slovakia"
+   ],
+   "cities": [
+    "bratislava"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "slovenia": {
+   "names": [
+    "slovenia"
+   ],
+   "cities": [
+    "ljubljana"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "south africa": {
+   "names": [
+    "south africa"
+   ],
+   "cities": [
+    "johannesburg",
+    "cape town"
+   ],
+   "regions": [
+    "emea"
+   ]
+  },
+  "spain": {
+   "names": [
+    "spain"
+   ],
+   "cities": [
+    "madrid",
+    "barcelona",
+    "valencia"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "sweden": {
+   "names": [
+    "sweden"
+   ],
+   "cities": [
+    "stockholm",
+    "gothenburg"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eu",
+    "eea",
+    "european union"
+   ]
+  },
+  "switzerland": {
+   "names": [
+    "switzerland"
+   ],
+   "cities": [
+    "zurich",
+    "zürich",
+    "geneva",
+    "basel",
+    "bern",
+    "lausanne"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea",
+    "eea"
+   ]
+  },
+  "taiwan": {
+   "names": [
+    "taiwan"
+   ],
+   "cities": [
+    "taipei"
+   ],
+   "regions": [
+    "apac"
+   ]
+  },
+  "thailand": {
+   "names": [
+    "thailand"
+   ],
+   "cities": [],
+   "regions": [
+    "apac"
+   ]
+  },
+  "turkey": {
+   "names": [
+    "turkey"
+   ],
+   "cities": [
+    "istanbul"
+   ],
+   "regions": [
+    "emea"
+   ]
+  },
+  "ukraine": {
+   "names": [
+    "ukraine"
+   ],
+   "cities": [
+    "dnipro",
+    "kharkiv",
+    "kiev",
+    "kyiv",
+    "lviv",
+    "odesa",
+    "odessa"
+   ],
+   "regions": [
+    "europe",
+    "european"
+   ],
+   "local": [
+    "україн",
+    "украин"
+   ]
+  },
+  "united arab emirates": {
+   "names": [
+    "united arab emirates",
+    "uae"
+   ],
+   "cities": [
+    "dubai"
+   ],
+   "regions": [
+    "emea"
+   ]
+  },
+  "united kingdom": {
+   "names": [
+    "united kingdom",
+    "uk",
+    "england",
+    "scotland",
+    "wales"
+   ],
+   "cities": [
+    "london",
+    "manchester",
+    "edinburgh",
+    "cambridge",
+    "bristol",
+    "belfast"
+   ],
+   "regions": [
+    "europe",
+    "european",
+    "emea"
+   ]
+  },
+  "united states": {
+   "names": [
+    "united states",
+    "usa",
+    "u.s.",
+    "us",
+    "u.s.a."
+   ],
+   "cities": [
+    "washington d.c.",
+    "dc",
+    "alabama",
+    "alaska",
+    "arizona",
+    "arkansas",
+    "california",
+    "colorado",
+    "connecticut",
+    "delaware",
+    "florida",
+    "hawaii",
+    "idaho",
+    "illinois",
+    "indiana",
+    "iowa",
+    "kansas",
+    "kentucky",
+    "louisiana",
+    "maine",
+    "maryland",
+    "massachusetts",
+    "michigan",
+    "minnesota",
+    "mississippi",
+    "missouri",
+    "montana",
+    "nebraska",
+    "nevada",
+    "new hampshire",
+    "new jersey",
+    "new mexico",
+    "new york",
+    "north carolina",
+    "north dakota",
+    "ohio",
+    "oklahoma",
+    "oregon",
+    "pennsylvania",
+    "rhode island",
+    "south carolina",
+    "south dakota",
+    "tennessee",
+    "texas",
+    "utah",
+    "vermont",
+    "virginia",
+    "washington",
+    "west virginia",
+    "wisconsin",
+    "wyoming",
+    "san francisco",
+    "sf",
+    "nyc",
+    "new york city",
+    "seattle",
+    "chicago",
+    "boston",
+    "austin",
+    "denver",
+    "los angeles",
+    "atlanta",
+    "miami",
+    "mountain view",
+    "santa clara",
+    "san diego",
+    "san jose",
+    "palo alto"
+   ],
+   "regions": [
+    "americas",
+    "north america",
+    "amer"
+   ]
+  },
+  "uruguay": {
+   "names": [
+    "uruguay"
+   ],
+   "cities": [],
+   "regions": [
+    "americas",
+    "latam"
+   ]
+  },
+  "vietnam": {
+   "names": [
+    "vietnam"
+   ],
+   "cities": [],
+   "regions": [
+    "apac"
+   ]
+  }
+ },
+ "groups": {
+  "eu": [
+   "austria",
+   "belgium",
+   "bulgaria",
+   "croatia",
+   "cyprus",
+   "czechia",
+   "denmark",
+   "estonia",
+   "finland",
+   "france",
+   "germany",
+   "greece",
+   "hungary",
+   "ireland",
+   "italy",
+   "latvia",
+   "lithuania",
+   "luxembourg",
+   "malta",
+   "netherlands",
+   "poland",
+   "portugal",
+   "romania",
+   "slovakia",
+   "slovenia",
+   "spain",
+   "sweden"
+  ],
+  "protected_non_eu": [
+   "switzerland",
+   "norway",
+   "iceland",
+   "liechtenstein"
+  ],
+  "efta": [
+   "switzerland",
+   "norway",
+   "iceland",
+   "liechtenstein"
+  ]
+ },
+ "marker_groups": {
+  "outside_europe": [
+   "us",
+   "usa",
+   "u.s.",
+   "u.s.a.",
+   "washington d.c.",
+   "dc",
+   "alabama",
+   "alaska",
+   "arizona",
+   "arkansas",
+   "california",
+   "colorado",
+   "connecticut",
+   "delaware",
+   "florida",
+   "hawaii",
+   "idaho",
+   "illinois",
+   "indiana",
+   "iowa",
+   "kansas",
+   "kentucky",
+   "louisiana",
+   "maine",
+   "maryland",
+   "massachusetts",
+   "michigan",
+   "minnesota",
+   "mississippi",
+   "missouri",
+   "montana",
+   "nebraska",
+   "nevada",
+   "new hampshire",
+   "new jersey",
+   "new mexico",
+   "new york",
+   "north carolina",
+   "north dakota",
+   "ohio",
+   "oklahoma",
+   "oregon",
+   "pennsylvania",
+   "rhode island",
+   "south carolina",
+   "south dakota",
+   "tennessee",
+   "texas",
+   "utah",
+   "vermont",
+   "virginia",
+   "washington",
+   "west virginia",
+   "wisconsin",
+   "wyoming",
+   "san francisco",
+   "sf",
+   "nyc",
+   "new york city",
+   "seattle",
+   "chicago",
+   "boston",
+   "austin",
+   "denver",
+   "los angeles",
+   "atlanta",
+   "miami",
+   "mountain view",
+   "santa clara",
+   "san diego",
+   "san jose",
+   "palo alto",
+   "ontario",
+   "quebec",
+   "british columbia",
+   "alberta",
+   "toronto",
+   "vancouver",
+   "montreal",
+   "ottawa",
+   "costa rica",
+   "brazil",
+   "mexico",
+   "argentina",
+   "colombia",
+   "chile",
+   "peru",
+   "uruguay",
+   "india",
+   "singapore",
+   "japan",
+   "china",
+   "korea",
+   "philippines",
+   "indonesia",
+   "malaysia",
+   "thailand",
+   "vietnam",
+   "new zealand",
+   "sydney",
+   "melbourne"
+  ],
+  "outside_europe_names": [
+   "united states",
+   "usa",
+   "u.s.",
+   "canada",
+   "amer",
+   "latam",
+   "australia",
+   "apac"
+  ]
+ },
+ "world_words": [
+  "worldwide",
+  "global",
+  "anywhere",
+  "home based"
+ ],
+ "languages": {
+  "german": [
+   "german",
+   "deutsch"
+  ],
+  "french": [
+   "french",
+   "français",
+   "francais"
+  ],
+  "dutch": [
+   "dutch"
+  ],
+  "polish": [
+   "polish"
+  ],
+  "italian": [
+   "italian"
+  ],
+  "spanish": [
+   "spanish"
+  ],
+  "portuguese": [
+   "portuguese"
+  ],
+  "czech": [
+   "czech"
+  ],
+  "slovak": [
+   "slovak"
+  ],
+  "hungarian": [
+   "hungarian"
+  ],
+  "romanian": [
+   "romanian"
+  ],
+  "swedish": [
+   "swedish"
+  ],
+  "norwegian": [
+   "norwegian"
+  ],
+  "danish": [
+   "danish"
+  ],
+  "finnish": [
+   "finnish"
+  ],
+  "japanese": [
+   "japanese"
+  ],
+  "korean": [
+   "korean"
+  ],
+  "chinese": [
+   "chinese",
+   "mandarin"
+  ],
+  "hebrew": [
+   "hebrew"
+  ],
+  "turkish": [
+   "turkish"
+  ],
+  "greek": [
+   "greek"
+  ],
+  "arabic": [
+   "arabic"
+  ],
+  "english": [
+   "english"
+  ],
+  "ukrainian": [
+   "ukrainian"
+  ],
+  "russian": [
+   "russian"
+  ],
+  "bulgarian": [
+   "bulgarian"
+  ]
+ }
+}

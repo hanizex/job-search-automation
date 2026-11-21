@@ -4,6 +4,7 @@ Offline tests for the Workday repeat-page retry in ats_fetch.py. No network.
 Run from the folder that holds ats_fetch.py:   python3 test_workday_retry.py
 """
 
+import testsupport  # noqa: F401  (selects the example profile)
 import unittest
 from unittest import mock
 

@@ -1,7 +1,7 @@
 """
-ATS adapters for Agent 1 — six families in one module.
+ATS adapters for the engine — six families in one module.
 
-New file, 25.10.2026. Standard library only, Python 3.9+.
+Standard library only, Python 3.9+.
 Add rows to data/companies.json with an "ats" key and call fetch_all() from boards.py.
 
 Every adapter returns a list of dicts in the shape poll_jobs.py already consumes:
@@ -98,7 +98,9 @@ def _join(parts):
 def fetch_greenhouse(cfg):
     """cfg: {name, token, host?}  host defaults to the US board API.
 
-    EU-resident boards (JetBrains, Payhawk) need host "boards-api.eu.greenhouse.io".
+    EU-hosted boards (JetBrains, Payhawk) use the same API host. Their apply links point to
+    job-boards.eu.greenhouse.io, which is taken from absolute_url. boards-api.eu.greenhouse.io
+    does not resolve any more, so it is not used.
     """
     host = cfg.get("host") or "boards-api.greenhouse.io"
     token = cfg["token"]

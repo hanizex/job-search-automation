@@ -1,88 +1,40 @@
 """
-Location priority for Agent 1 — replaces the relocation watch.
+Location priority for the engine - replaces the relocation watch. Standard library only, Python 3.9+.
 
-New file, 25.10.2026. Standard library only, Python 3.9+.
+The places themselves come from the search profile (profile.py) and the geography catalogue (geo/places.json),
+so any home country works. Scale used inside this module:
 
-Mykola's rule of 25.10:
-    1  Sofia / Bulgaria
-    2  Warsaw, any other EU country, or 100% remote
-    3  non-EU with temporary protection: Switzerland, Norway, Iceland, Liechtenstein
-    4  needs a work visa: United Kingdom, USA, Canada, everything else
-    drop  Germany; Ukraine-only
+    1  home: the home country or one of its places
+    2  relocation zone (location.relocation)
+    3  secondary relocation zone (location.relocation_secondary)
+    4  everything else that names a place: needs a work visa
+    drop  excluded places (location.excluded)
 
-A row with several locations keeps the BEST (lowest) priority among them, and is
-dropped only when EVERY location is a drop. That is what stops a Germany entry in
-a ten-country listing from killing an otherwise good job.
+A row with several locations keeps the BEST (lowest) priority among them, and is dropped only when EVERY
+location is excluded. That is what stops an excluded country in a ten-country listing from killing an
+otherwise good job. priorities.py turns this 1-4 scale into the three P-levels shown to the user.
 """
-
 import re
+
+import search_profile as _profile
 
 DROP = None
 
-_EU = {
-    "austria", "belgium", "bulgaria", "croatia", "cyprus", "czechia",
-    "czech republic", "denmark", "estonia", "finland", "france", "greece",
-    "hungary", "ireland", "italy", "latvia", "lithuania", "luxembourg",
-    "malta", "netherlands", "poland", "portugal", "romania", "slovakia",
-    "slovenia", "spain", "sweden",
-}
-
-_EU_CITIES = {
-    "amsterdam": "netherlands", "rotterdam": "netherlands", "eindhoven": "netherlands",
-    "warsaw": "poland", "warszawa": "poland", "krakow": "poland", "kraków": "poland",
-    "wroclaw": "poland", "gdansk": "poland", "szczecin": "poland", "poznan": "poland",
-    "dublin": "ireland", "cork": "ireland",
-    "paris": "france", "lyon": "france", "toulouse": "france",
-    "madrid": "spain", "barcelona": "spain", "valencia": "spain",
-    "lisbon": "portugal", "porto": "portugal",
-    "milan": "italy", "rome": "italy", "turin": "italy",
-    "stockholm": "sweden", "gothenburg": "sweden",
-    "copenhagen": "denmark", "helsinki": "finland", "tallinn": "estonia",
-    "riga": "latvia", "vilnius": "lithuania", "kaunas": "lithuania",
-    "prague": "czechia", "brno": "czechia", "bratislava": "slovakia",
-    "budapest": "hungary", "bucharest": "romania", "cluj": "romania",
-    "athens": "greece", "thessaloniki": "greece",
-    "vienna": "austria", "brussels": "belgium", "luxembourg city": "luxembourg",
-    "zagreb": "croatia", "ljubljana": "slovenia", "valletta": "malta",
-    "limassol": "cyprus", "nicosia": "cyprus", "paphos": "cyprus",
-}
-
-_BULGARIA = {"bulgaria", "sofia", "plovdiv", "varna", "burgas", "ruse", "bgr"}
-
-_PROTECTED_NON_EU = {
-    "switzerland", "zurich", "zürich", "geneva", "basel", "bern", "lausanne",
-    "norway", "oslo", "bergen", "trondheim",
-    "iceland", "reykjavik", "reykjavík",
-    "liechtenstein", "vaduz",
-}
-
-_GERMANY = {
-    "germany", "deutschland", "berlin", "munich", "münchen", "hamburg",
-    "frankfurt", "cologne", "köln", "stuttgart", "düsseldorf", "dusseldorf",
-    "leipzig", "dresden", "nuremberg", "nürnberg", "erlangen", "walldorf", "ulm",
-}
-
-_UKRAINE = {"ukraine", "kyiv", "kiev", "lviv", "kharkiv", "odesa", "odessa", "dnipro"}
-
-_VISA = {
-    "united kingdom", "uk", "england", "scotland", "wales", "london",
-    "manchester", "edinburgh", "cambridge", "bristol", "belfast",
-    "united states", "usa", "u.s.", "canada", "toronto", "vancouver", "montreal",
-    "israel", "tel aviv", "india", "bangalore", "bengaluru", "pune", "hyderabad",
-    "japan", "tokyo", "singapore", "australia", "sydney", "melbourne",
-    "brazil", "mexico", "argentina", "uae", "dubai", "turkey", "istanbul",
-    "serbia", "belgrade", "armenia", "yerevan", "georgia", "tbilisi",
-    "moldova", "chisinau", "albania", "north macedonia", "bosnia", "montenegro",
-}
-
-# "remote" on its own, or tied to Europe, is priority 2. Tied to a country, the
-# country decides, so these markers are only consulted when nothing else matched.
-_REMOTE_EUROPE = re.compile(
-    r"\b(emea|europe|european|home\s*based|worldwide|global|anywhere)\b", re.I
-)
+# "remote" on its own, or tied to the home region, is priority 2 here. Tied to a country, the country decides,
+# so these markers are only consulted when nothing else matched.
 _REMOTE_ANY = re.compile(r"\b(remote|distributed|work\s*from\s*home|wfh)\b", re.I)
 
 _SPLIT = re.compile(r"\s*(?:;|\||\bor\b|/(?!\s*hybrid))\s*", re.I)
+
+
+def _cfg():
+    return _profile.compiled()
+
+
+def wide_search(low):
+    """Region-wide remote words of the home region (for a European home: EMEA, Europe, Worldwide, Anywhere...)."""
+    rx = _cfg().wide_re
+    return rx.search(low) if rx else None
 
 
 def _chunks(text):
@@ -90,43 +42,41 @@ def _chunks(text):
     return [p for p in parts if p]
 
 
-_DROPPED = "drop"      # this chunk is Germany or Ukraine
+_DROPPED = "drop"      # this chunk is an excluded place
 _UNKNOWN = "unknown"   # no rule matched this chunk
 
 
 def _classify(chunk):
     """One chunk -> priority int, _DROPPED, or _UNKNOWN."""
+    c = _cfg()
     low = " " + chunk.lower().replace(",", " ").replace("(", " ").replace(")", " ") + " "
 
-    def has(words):
-        return any(f" {w} " in low for w in words)
+    def has(tokens):
+        return any(f" {w} " in low for w in tokens)
 
-    # Germany and Ukraine are checked first: they are drops wherever they appear.
-    if has(_GERMANY):
+    # Excluded places are checked first: they are drops wherever they appear.
+    if has(c.excl_tokens):
         return _DROPPED
-    if has(_UKRAINE):
-        return _DROPPED
-    if has(_BULGARIA):
+    if has(c.home_tokens):
         return 1
-    if has(_PROTECTED_NON_EU):
+    if has(c.second_tokens):
         return 3
-    if has(_EU) or has(set(_EU_CITIES)):
+    if has(c.reloc_tokens):
         return 2
-    if has(_VISA):
+    if has(c.visa_tokens):
         return 4
-    if _REMOTE_EUROPE.search(low):
+    if wide_search(low):
         return 2
     if _REMOTE_ANY.search(low):
-        return 2  # bare "Remote" with no country: assume Europe-eligible, verify later
+        return 2  # bare "Remote" with no country: assume home-region eligible, verify later
     return _UNKNOWN
 
 
 def priority_for(location_text, default=4):
     """Best priority across every location in the string, or DROP (None).
 
-    - Any chunk that resolves to 1-4 wins, lowest number first. One German entry
-      in a ten-country listing therefore never kills the row.
-    - DROP only when every chunk is Germany or Ukraine.
+    - Any chunk that resolves to 1-4 wins, lowest number first.
+    - DROP only when every chunk is an excluded place.
     - A string we cannot read at all falls back to `default`, never to a drop.
     """
     chunks = _chunks(location_text)
@@ -146,14 +96,15 @@ def is_dropped(location_text):
 
 
 def entity_risk(location_text):
-    """True when a remote row names no Bulgarian location.
+    """True when a remote row names no home place.
 
-    Not a drop. GitLab states it will not hire where it has no entity or PEO and
-    Bulgaria is not on its list; Grafana, Elastic and Veeam show no Bulgarian
-    location either. Flag it so the note can say: перевірити, чи наймають у Болгарії.
+    Not a drop. Some employers hire remotely only where they have an entity or PEO, and a row that never
+    names the home country gives no sign it does. Flag it so the note can say: check whether they hire in
+    the home country.
     """
     text = location_text or ""
-    if not _REMOTE_ANY.search(text) and not _REMOTE_EUROPE.search(text):
+    low = " " + text.lower() + " "
+    if not _REMOTE_ANY.search(text) and not wide_search(low):
         return False
     return not any(_classify(c) == 1 for c in _chunks(text))
 
@@ -161,11 +112,12 @@ def entity_risk(location_text):
 def explain(location_text):
     """Human-readable reason, for run.log."""
     p = priority_for(location_text)
+    home = _cfg().home
     if p is DROP:
-        return "drop: Germany or Ukraine only"
+        return "drop: excluded place only"
     return {
-        1: "p1: Sofia / Bulgaria",
-        2: "p2: EU, Warsaw or remote",
-        3: "p3: non-EU temporary protection",
+        1: f"p1: home ({home})",
+        2: "p2: relocation zone or remote",
+        3: "p3: secondary relocation zone",
         4: "p4: work visa needed",
     }[p]

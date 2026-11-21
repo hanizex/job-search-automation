@@ -5,6 +5,7 @@ Run from the folder that holds ats.py:   python3 test_patch.py
 (do not add -I: it strips the current directory from sys.path and the imports fail)
 """
 
+import testsupport  # noqa: F401  (selects the example profile)
 import json
 import sys
 import unittest

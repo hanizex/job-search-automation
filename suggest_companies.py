@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-suggest_companies.py - keeps Agent 1's company list (data/companies.json) alive.
+suggest_companies.py - keeps the engine's company list (data/companies.json) alive.
 
 It answers two questions every time it runs:
   1. Which companies from the tracker are worth scanning directly?
@@ -12,9 +12,9 @@ It answers two questions every time it runs:
 
 Inputs (all local files):
   data/tracker_export.json  - export of the "Мої вакансії" tracker (company, role, status, url, added)
-  data/companies.json       - Agent 1's scan list
+  data/companies.json       - the engine's scan list
   data/company_rules.json   - weights, thresholds, exclusions, aliases (edit by hand)
-  out/jobs_*.md, data/run.log - what Agent 1 actually found, to measure each company's yield
+  out/jobs_*.md, data/run.log - what the engine actually found, to measure each company's yield
 Output:
   out/company_suggestions.md - human-readable report (Ukrainian)
   data/ats_cache.json        - remembered ATS lookups, so the network is hit rarely
@@ -31,6 +31,8 @@ import shutil
 from collections import Counter, defaultdict
 from pathlib import Path
 from urllib.parse import urlparse
+
+import i18n
 
 ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "data"
@@ -125,7 +127,7 @@ def ats_from_url(url: str):
 
 
 def yield_from_agent(aliases: dict, window_days: int):
-    """Count matching postings per company in Agent 1 output files within the window."""
+    """Count matching postings per company in the engine output files within the window."""
     since = TODAY - dt.timedelta(days=window_days)
     counts, last = Counter(), {}
     for f in sorted(OUT.glob("jobs_*.md")):
@@ -232,21 +234,20 @@ def check_endpoint(c: dict, aliases: dict, allow_network: bool):
             c["notes"] = (c.get("notes", "") + f" Verified: Greenhouse board name '{board}'.").strip()
             c["verified_on"] = TODAY.isoformat()
         elif ok is False:
-            c["scan_status"], c["action"] = "MANUAL", f"Greenhouse-борд належить іншій компанії ('{board}')"
+            c["scan_status"], c["action"] = "MANUAL", i18n.t("sc.greenhouse_other", board=board)
             c["notes"] = (c.get("notes", "") + f" REJECTED: board name is '{board}'.").strip()
         else:
-            c["scan_status"], c["action"] = "CHECK", "перевір вручну: назву борду не підтверджено"
+            c["scan_status"], c["action"] = "CHECK", i18n.t("sc.check_board")
     elif not slug_is_full_name(c.get("notes", ""), c["display"]):
-        c["scan_status"], c["action"] = "CHECK", "перевір вручну: збіг лише за першим словом назви"
+        c["scan_status"], c["action"] = "CHECK", i18n.t("sc.check_first_word")
 
 
 def why(c: dict) -> str:
-    ua = {"interview": "співбесіда", "talk": "розмова", "offer": "оффер", "applied": "подано",
-          "rejected": "відмова", "todo": "у черзі", "closed": "закрита", "skip": "пропущено"}
-    parts = [f"{ua.get(st, st)} {n}" for st, n in c["status"].most_common()]
-    parts.append(f"ролей {len(c['roles'])}")
+    known = ("interview", "talk", "offer", "applied", "rejected", "todo", "closed", "skip")
+    parts = [f"{i18n.t('sc.status.' + st) if st in known else st} {n}" for st, n in c["status"].most_common()]
+    parts.append(i18n.t("sc.roles", n=len(c["roles"])))
     if c["recent"]:
-        parts.append("свіжа")
+        parts.append(i18n.t("sc.fresh"))
     return ", ".join(parts)
 
 
@@ -327,8 +328,8 @@ def main():
             ats, endpoint, note = hint
             c["ats"], c["endpoint"] = ats, endpoint
             c["scan_status"] = "OK" if ats in can_fetch else "MANUAL"
-            c["action"] = ("додано в сканування" if c["scan_status"] == "OK"
-                           else f"потрібен адаптер для {ats}")
+            c["action"] = (i18n.t("sc.added") if c["scan_status"] == "OK"
+                           else i18n.t("sc.need_adapter", ats=ats))
             c["notes"] = note
             continue
         res, used_net = probe(c["display"], cache, allow_network=(not args.no_probe and probes_left > 0))
@@ -336,16 +337,16 @@ def main():
             probes_left -= 1
         if res and res.get("status") == "OK" and res.get("ats") in can_fetch:
             c["ats"], c["endpoint"], c["scan_status"] = res["ats"], res["endpoint"], "OK"
-            c["action"], c["notes"] = "додано в сканування", res.get("notes", "")
+            c["action"], c["notes"] = i18n.t("sc.added"), res.get("notes", "")
         elif hint:  # own careers site
             c["ats"], c["endpoint"], c["scan_status"] = hint[0], hint[1], "MANUAL"
-            c["action"], c["notes"] = f"свій сайт: потрібен адаптер ({host_of(hint[1])})", hint[2]
+            c["action"], c["notes"] = i18n.t("sc.own_site", host=host_of(hint[1])), hint[2]
         elif res is None:
             c["ats"], c["endpoint"], c["scan_status"] = "?", "", "PENDING"
-            c["action"], c["notes"] = "ATS ще не перевірено (запусти без --no-probe)", ""
+            c["action"], c["notes"] = i18n.t("sc.not_probed"), ""
         else:
             c["ats"], c["endpoint"], c["scan_status"] = res.get("ats") or "Unknown", "", "MANUAL"
-            c["action"], c["notes"] = "ATS не знайдено: знайди сторінку вакансій вручну", res.get("notes", "")
+            c["action"], c["notes"] = i18n.t("sc.not_found"), res.get("notes", "")
 
     for c in add:
         check_endpoint(c, aliases, allow_network=not args.no_probe)
@@ -381,7 +382,7 @@ def main():
     L.append(f"# Які компанії сканувати - {TODAY.isoformat()}\n")
     L.append(f"Компаній у трекері: {len(comp)}. Додати: {len(add)}. Спостерігати: {len(watch)}. "
              f"Прибрати зі сканування: {len(remove)}. Режим: {'ЗАПИСАНО' if args.apply else 'тільки звіт'}.\n")
-    L.append(f"Дані Agent 1 за {window} днів: {run_days} днів із запусками.\n")
+    L.append(f"Дані the engine за {window} днів: {run_days} днів із запусками.\n")
     L.append("## Додати (бал >= %d)\n" % rules["thresholds"]["add"])
     L.append("| Компанія | Бал | Чому | ATS | Що робити |\n|---|---|---|---|---|")
     for c in add:
@@ -404,8 +405,8 @@ def main():
         L.append(f"- {e['name']} ({e['ats']})")
     if not remove:
         L.append("- нікого")
-    L.append("\n## Уже в списку Agent 1\n")
-    L.append("| Компанія | Статус у списку | Бал у трекері | Знайдено Agent 1 за %d днів |\n|---|---|---|---|" % window)
+    L.append("\n## Уже в списку the engine\n")
+    L.append("| Компанія | Статус у списку | Бал у трекері | Знайдено the engine за %d днів |\n|---|---|---|---|" % window)
     for c, e in already:
         L.append(f"| {e['name']} | {e.get('status')} | {c['score']} | {agent_counts.get(norm(e['name'], aliases), 0)} |")
     L.append("\n## Виключено правилами (company_rules.json)\n")

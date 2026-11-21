@@ -1,5 +1,5 @@
 """
-boards.py - job-board adapters for Agent 1 (11.10.2026). Called from poll_jobs.py.
+boards.py - job-board adapters. Called from poll_jobs.py.
 
 Reads public listing pages, the same pages a person sees, at a low rate (3 s between
 requests, a few pages per day). Returns postings in poll_jobs' normalized shape:
@@ -7,10 +7,10 @@ requests, a few pages per day). Returns postings in poll_jobs' normalized shape:
 so they go through the same title / location / age filters, job_filters.py and seen.json.
 
 Active boards (daily):
-  DEV.BG  - highest priority. Sofia office and hybrid are in scope (Mykola lives there).
+  DEV.BG  - highest priority. Bulgarian lists; author-specific, off by default (sources.boards).
   DOU     - RSS feeds per category.
   Djinni  - HTML listing (RSS has no company or location).
-  My Manager - daily email digest read over IMAP (12.10), runs last.
+  My Manager - daily email digest read over IMAP , runs last.
 Waiting-list boards (weekly volume count only, nothing emailed):
   Just Join IT, NoFluffJobs.
 Blocked: jobs.bg (Cloudflare 403 for scripts) - not used.
@@ -30,7 +30,11 @@ from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Callable, List, Optional
 
+import urllib.parse
+
 import requests
+
+import search_profile as _profile
 
 DELAY = 3.0
 HEADERS = {
@@ -46,16 +50,19 @@ DEVBG_LISTS = [  # remote first, so a remote copy of a multi-city ad wins the de
     "https://dev.bg/company/jobs/pm-ba-and-more/sofiya/",
 ]
 DEVBG_MAX_PAGES = 3
-DOU_FEEDS = [
-    "https://jobs.dou.ua/vacancies/feeds/?category=Project%20Manager",
-    "https://jobs.dou.ua/vacancies/feeds/?category=Product%20Manager",
-]
-DJINNI_LISTS = [
-    "https://djinni.co/jobs/?primary_keyword=Project+Manager",
-    "https://djinni.co/jobs/?primary_keyword=Product+Manager",
-    "https://djinni.co/jobs/keyword-delivery_manager/",
-]
 DJINNI_MAX_PAGES = 3
+
+
+def dou_feeds() -> List[str]:
+    """One category feed per search term of the profile (sources.dou, or derived from roles.titles)."""
+    return ["https://jobs.dou.ua/vacancies/feeds/?category=" + urllib.parse.quote(t) for t in _profile.compiled().dou_terms]
+
+
+def djinni_lists() -> List[str]:
+    """One list page per Djinni keyword of the profile (sources.djinni, or derived from roles.titles)."""
+    return ["https://djinni.co/jobs/?primary_keyword=" + urllib.parse.quote_plus(k) for k in _profile.compiled().djinni_keywords]
+
+
 WATCH_BOARDS = {
     "Just Join IT (remote PM)": "https://justjoin.it/job-offers/remote/pm",
     "NoFluffJobs (remote PM)": "https://nofluffjobs.com/pl/praca-zdalna/project-manager",
@@ -89,6 +96,8 @@ def _text(s: str) -> str:
 
 
 def _posting(title, location, dt, url, company, board) -> dict:
+    if dt is not None and dt.tzinfo is not None:   # e-mail Date headers carry a zone; the rest of the pipeline is naive UTC
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
     return dict(title=title or "UNKNOWN", location=location or "UNKNOWN",
                 posted_display=dt.date().isoformat() if dt else "UNKNOWN", posted_sort=dt,
                 apply=url or "UNKNOWN", hiring_entity=company or "UNKNOWN", source_board=board)
@@ -218,13 +227,13 @@ def parse_dou_rss(xml: str, default_company: str = "") -> List[dict]:
         loc = _dou_location(places, desc) + (f" · {salary[0]}" if salary else "")
         post = _posting(role.strip(), loc, dt, url, company, "DOU")
         if desc:
-            post["_jd_embedded"] = desc   # Stage A (13.10): RSS snippet; jd_fetch reads the page if it is too short
+            post["_jd_embedded"] = desc   # screening : RSS snippet; jd_fetch reads the page if it is too short
         out.append(post)
     return out
 
 
 def fetch_dou_companies(log: Callable[[str], None], feeds_path: Path = Path("data/dou_company_feeds.json")) -> List[dict]:
-    """Company vacancy feeds on DOU (jobs.dou.ua/vacancies/<slug>/feeds/) for the Ukrainian-rooted list (12.10)."""
+    """Company vacancy feeds on DOU (jobs.dou.ua/vacancies/<slug>/feeds/) for the Ukrainian-rooted list ."""
     try:
         feeds = json.loads(feeds_path.read_text(encoding="utf-8"))
     except (FileNotFoundError, ValueError):
@@ -245,7 +254,7 @@ def fetch_dou_companies(log: Callable[[str], None], feeds_path: Path = Path("dat
 
 def fetch_dou(log: Callable[[str], None]) -> List[dict]:
     rows, seen = [], set()
-    for feed in DOU_FEEDS:
+    for feed in dou_feeds():
         r = _get(feed)
         if r is None or r.status_code != 200:
             log(f"DOU: {feed} -> {getattr(r, 'status_code', 'request failed')}")
@@ -306,7 +315,7 @@ def parse_djinni(page_html: str) -> List[dict]:
 
 def fetch_djinni(log: Callable[[str], None]) -> List[dict]:
     rows, seen = [], set()
-    for base in DJINNI_LISTS:
+    for base in djinni_lists():
         for page in range(1, DJINNI_MAX_PAGES + 1):
             sep = "&" if "?" in base else "?"
             url = base if page == 1 else f"{base}{sep}page={page}"
@@ -324,7 +333,7 @@ def fetch_djinni(log: Callable[[str], None]) -> List[dict]:
     return rows
 
 
-# ------------------------------------------------------------------ iGaming company sites (12.10)
+# ------------------------------------------------------------------ iGaming company sites 
 TEAMTAILOR_FEEDS = {"EveryMatrix": "https://everymatrix.teamtailor.com/jobs.rss"}
 SOFTSWISS_URLS = ["https://careers.softswiss.com/wp-json/wp/v2/vacancies?per_page=100",
                   "https://careers.softswiss.com/vacancies/"]
@@ -470,8 +479,8 @@ def update_market_watch(log: Callable[[str], None], data_dir: Path, out_dir: Pat
     (out_dir / "market_watch.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-# ------------------------------------------------------------------ My Manager email digest (12.10)
-# digest@mymgr.app sends a daily email at ~08:00 Sofia to the same Gmail that sends Agent 1's
+# ------------------------------------------------------------------ My Manager email digest 
+# digest@mymgr.app sends a daily email at ~08:00 Sofia to the same Gmail that sends the engine's
 # digest. Read over IMAP with the same app password (.env SMTP_USER / SMTP_PASS), read-only.
 # Looks back MYMGR_DAYS days, so a digest that arrives after the run is picked up next day
 # (seen.json stops repeats). Links point to mymgr.app, not the original posting, so this
@@ -553,8 +562,8 @@ def fetch_mymgr(log: Callable[[str], None], env_path: Path = Path(".env")) -> Li
     return uniq
 
 
-# ------------------------------------------------------------------ LinkedIn job-alert emails (14.10)
-# jobalerts-noreply@linkedin.com = alerts Mykola set up himself -> title filter is skipped (trusted_title).
+# ------------------------------------------------------------------ LinkedIn job-alert emails 
+# jobalerts-noreply@linkedin.com = alerts the user set up themselves -> title filter is skipped (trusted_title).
 # jobs-noreply@linkedin.com = LinkedIn's own recommendations -> normal title filter.
 # Same IMAP route and app password as My Manager. Read-only, 3-day lookback; seen.json stops repeats.
 LI_SENDERS = {"jobalerts-noreply@linkedin.com": True, "jobs-noreply@linkedin.com": False}
@@ -630,11 +639,20 @@ def fetch_linkedin_alerts(log: Callable[[str], None], env_path: Path = Path(".en
     return uniq
 
 
+BOARD_FETCHERS = (   # (display name, key used in profile sources.boards, function)
+    ("DEV.BG", "dev.bg", fetch_devbg), ("DOU", "dou", fetch_dou), ("Djinni", "djinni", fetch_djinni),
+    ("DOU companies", "dou_companies", fetch_dou_companies), ("iGaming sites", "igaming_sites", fetch_igaming_sites),
+    ("My Manager email", "mymanager_email", fetch_mymgr), ("LinkedIn alerts", "linkedin_alerts", fetch_linkedin_alerts),
+)
+
+
 def fetch_all(log: Callable[[str], None]) -> List[dict]:
+    """Read the boards named in the profile (sources.boards)."""
+    enabled = set(_profile.compiled().boards)
     rows = []
-    for name, fn in (("DEV.BG", fetch_devbg), ("DOU", fetch_dou), ("Djinni", fetch_djinni),
-                     ("DOU companies", fetch_dou_companies), ("iGaming sites", fetch_igaming_sites),
-                     ("My Manager email", fetch_mymgr), ("LinkedIn alerts", fetch_linkedin_alerts)):
+    for name, key, fn in BOARD_FETCHERS:
+        if key not in enabled:
+            continue
         try:
             got = fn(log)
         except Exception as e:  # a broken board must never kill the run

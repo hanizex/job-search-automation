@@ -57,8 +57,10 @@ import ats as ats_adapters  # not `ats`: main() uses `ats` as a loop variable fo
 import ats_fetch
 import collapse
 import job_filters
+import i18n
 import jd_fetch
 import priorities
+import search_profile as profile
 from priorities import NON_EU_MEMBERS_RE as _NON_EU_MEMBERS_RE
 import url_hints
 import boards
@@ -72,67 +74,26 @@ SMTP_PORT = 465
 # ---------------------------------------------------------------------------
 # Filters
 # ---------------------------------------------------------------------------
-TITLE_KEYWORDS = [
-    "delivery manager", "project manager", "program manager",
-    "technical program manager", "product manager", "engagement manager",
-    "delivery lead", "head of delivery", "portfolio manager",
-    # added 11.10 for the job boards (DEV.BG / DOU / Djinni)
-    "product owner", "product lead", "head of product", "product director", "director product",
-    "director of product", "scrum master", "release manager", "programme manager",
-    "проєктн", "проектн", "менеджер проє", "менеджер прое", "продакт",
-    "delivery director", "integration manager", "керівник проє", "керівник прое",
-]
-
-EU_COUNTRIES = {
-    "austria", "belgium", "bulgaria", "croatia", "cyprus", "czech republic",
-    "czechia", "denmark", "estonia", "finland", "france", "germany",
-    "greece", "hungary", "ireland", "italy", "latvia", "lithuania",
-    "luxembourg", "malta", "netherlands", "poland", "portugal", "romania",
-    "slovakia", "slovenia", "spain", "sweden",
-}
-# Any of these on their own is enough to accept a posting, "Remote" included
-# — "Remote" here means unscoped (no non-EU region attached; see below).
-ACCEPT_KEYWORDS = {"bulgaria", "sofia", "europe", "emea"} | EU_COUNTRIES
-
-# A posting whose location contains one of these, and NONE of the accept
-# keywords above, is scoped to a region we don't want — even if the word
-# "Remote" also appears (that was the bug: "United States (Remote)" is a
-# US-only remote role, not a Bulgaria/EU-eligible one). Named explicitly in
-# the brief: United States, Canada, AMER, LATAM, Australia, APAC.
-NON_EU_ONLY_MARKERS = {
-    "united states", "usa", "u.s.", "canada", "amer", "latam", "australia", "apac",
-}
-
-# 25.10: the markers above only catch the spelled-out names. US-based boards (Stripe, ServiceNow,
-# OpenAI, Databricks) write "US-Remote", "us; Remote", "Remote - California", "Remote, Costa Rica", so
-# priorities.NON_EU_MEMBERS_RE (US states and cities, Canadian provinces, LATAM and APAC countries,
-# whole words only) is consulted too. Same rule as the markers: only when no accept keyword is present.
-
-
 def title_matches(title: str) -> bool:
+    """A title passes when it contains one of the profile's roles.titles (case-insensitive)."""
     t = (title or "").lower()
-    return any(k in t for k in TITLE_KEYWORDS)
-
-
-_EU_WORD_RE = re.compile(r"\b(eu|eea|european union)\b", re.I)  # "Remote (EU or US)" must not be lost to the US marker
+    return any(k in t for k in profile.compiled().titles)
 
 
 def location_matches(location: str) -> bool:
+    """First location pass. Which places count comes from the profile (profile.py, geo/places.json)."""
+    c = profile.compiled()
     loc = (location or "").lower()
-    if any(k in loc for k in ACCEPT_KEYWORDS) or _EU_WORD_RE.search(loc):
-        return True  # an explicit EU/EEA country, Bulgaria, Europe, or EMEA — always in, remote or not
+    if (c.accept_re and c.accept_re.search(loc)) or (c.eu_wide_re and c.eu_wide_re.search(loc)):
+        return True  # a home or relocation place, or the home region itself: always in, remote or not
+    scoped_out = any(m in loc for m in c.marker_names) or bool(_NON_EU_MEMBERS_RE.search(loc))
     if "remote" in loc:
-        # "Remote" with no EU/Bulgaria/Europe/EMEA signal — only accept if
-        # it isn't scoped to a specifically excluded non-EU region.
-        return (not any(m in loc for m in NON_EU_ONLY_MARKERS)
-                and not _NON_EU_MEMBERS_RE.search(loc))
-    # 26.10: a European city named without its country ("Amsterdam", "Paris", "Dublin") or a
-    # region-wide remote without the word "remote" ("Worldwide", "Anywhere") has no accept keyword,
-    # so it used to be lost here: 9 Adyen/Checkout.com/ServiceNow roles in the first audit. Let
-    # priorities.py decide: P1/P2 pass (still never with a US/Canada/LATAM/APAC marker); P3 does not.
-    return (priorities.priority3(location) in (1, 2)
-            and not any(m in loc for m in NON_EU_ONLY_MARKERS)
-            and not _NON_EU_MEMBERS_RE.search(loc))
+        # "Remote" with no home-region signal: accept it unless it is scoped to a region outside your reach
+        # ("United States (Remote)" is a US-only remote role).
+        return not scoped_out
+    # A city named without its country, or a region-wide remote without the word "remote" ("Worldwide"):
+    # let priorities.py decide. P1/P2 pass (never with an outside-region marker); P3 does not.
+    return priorities.priority3(location) in (1, 2) and not scoped_out
 
 
 # ---------------------------------------------------------------------------
@@ -478,7 +439,7 @@ def normalize_job(ats: str, job: dict, endpoint: str) -> dict:
     norm = fn(job, endpoint=endpoint)
     for k in ("title", "location"):   # Workday sends "Customer Experience &amp; Business Process ..."
         norm[k] = html.unescape(norm[k])
-    try:  # Stage A (13.10): remember where the ad text can be read; no network here
+    try:  # screening : remember where the ad text can be read; no network here
         jd_fetch.attach_sources(norm, ats, job, endpoint)
     except Exception:
         pass
@@ -627,7 +588,14 @@ def enrich_from_url(p: dict) -> None:
 
 def sort_postings(rows: list) -> list:
     """26.10: priority 1 first, then 2, then 3; inside each priority, newest first. Two stable passes."""
-    rows.sort(key=lambda p: p["posted_sort"] or datetime.min, reverse=True)
+    def when(p):
+        # Dates from e-mail sources can be timezone-aware while the rest are naive; comparing both raises TypeError.
+        dt = p["posted_sort"]
+        if dt is None:
+            return datetime.min
+        return dt.astimezone(timezone.utc).replace(tzinfo=None) if dt.tzinfo else dt
+
+    rows.sort(key=when, reverse=True)
     rows.sort(key=lambda p: p.get("priority") or 9)
     return rows
 
@@ -769,11 +737,11 @@ def write_import_file(new_postings: list, pool_path: Path, out_path: Path) -> No
         if m:
             pay, loc = m.group(1).strip(), loc[:m.start()].strip()
         company = p["hiring_entity"] if p["hiring_entity"] != "UNKNOWN" else p["source_board"]
-        board = p["source_board"] if p["source_board"] in BOARD_NAMES else f"сайт компанії ({p['source_board']})"
+        board = p["source_board"] if p["source_board"] in BOARD_NAMES else i18n.t("board.company_site", name=p["source_board"])
         row = {"company": company, "role": p["title"], "url": url, "location": loc, "pay": pay,
                "board": board, "posted": p["posted_display"].replace(" (POSSIBLY STALE)", ""),
                "found": today_s}
-        for k in ("jd", "jd_verdict", "jd_why", "jd_src"):   # Stage A (13.10)
+        for k in ("jd", "jd_verdict", "jd_why", "jd_src"):   # screening 
             if p.get(k):
                 row[k] = p[k]
         pool[key] = row
@@ -840,6 +808,9 @@ def main():
     ap.add_argument("--log", default=Path("data/run.log"), type=Path)
     ap.add_argument("--no-notify", action="store_true",
                      help="Skip the macOS notification even if new postings are found.")
+    ap.add_argument("--profile", type=Path, default=None,
+                     help="Search profile (JSON). Default: $JSE_PROFILE, then ./profile.json. "
+                          "Try profiles/example_eu_remote_pm.json.")
     ap.add_argument("--dry-run", action="store_true",
                      help="Do everything but don't write seen.json, out/ files, or send email.")
     ap.add_argument("--env-file", default=Path(".env"), type=Path,
@@ -847,12 +818,20 @@ def main():
     ap.add_argument("--test-email", action="store_true",
                      help="Email whatever is currently in out/latest.md immediately, "
                           "ignoring seen.json and skipping the fetch entirely.")
+    ap.add_argument("--only", action="append", default=[],
+                     help="Diagnostics: fetch only these companies (repeatable, by name). Forces "
+                          "--dry-run and skips the job boards, so one company can be checked in seconds.")
     ap.add_argument("--report-all", action="store_true",
                      help="Write the full current filtered set (title+location+age "
                           "filters applied, seen.json ignored) to out/all_current.md. "
                           "Does not read new_postings against, or write to, seen.json, "
                           "and does not send email or fire the macOS notification.")
     args = ap.parse_args()
+    try:
+        profile.use(args.profile) if args.profile else profile.active()
+    except profile.ProfileError as e:
+        print(e, file=sys.stderr)
+        sys.exit(2)
 
     if args.test_email:
         run_test_email(args.out_dir / "latest.md", args.env_file, args.log)
@@ -864,6 +843,11 @@ def main():
         log(f"FATAL: {args.companies} not found — run discover_ats.py first.", args.log)
         sys.exit(1)
     companies = json.loads(args.companies.read_text(encoding="utf-8"))
+    if args.only:
+        wanted = {n.lower() for n in args.only}
+        companies = [c for c in companies if c.get("name", "").lower() in wanted]
+        args.dry_run = True
+        log(f"--only: {len(companies)} company(ies) selected; dry-run forced, job boards skipped", args.log)
     ok_companies = [c for c in companies if c.get("status") == "OK"]
     log(f"Loaded {len(companies)} companies ({len(ok_companies)} status=OK) from {args.companies}", args.log)
 
@@ -921,15 +905,16 @@ def main():
         if i < len(groups) - 1:
             time.sleep(RATE_LIMIT_SECONDS)
 
-    # Job boards (11.10): DEV.BG, DOU, Djinni - see boards.py.
+    # Job boards : DEV.BG, DOU, Djinni - see boards.py.
     try:
-        all_postings.extend(boards.fetch_all(lambda m: log(m, args.log)))
+        if not args.only:
+            all_postings.extend(boards.fetch_all(lambda m: log(m, args.log)))
         if not args.dry_run:
             boards.update_market_watch(lambda m: log(m, args.log), Path("data"), args.out_dir)
     except Exception as e:
         log(f"FAILED job boards block: {e!r}", args.log)
 
-    # Tech-giant boards (25.10): Greenhouse / Ashby / Lever / SmartRecruiters via ats.py.
+    # Tech-giant boards : Greenhouse / Ashby / Lever / SmartRecruiters via ats.py.
     # Only rows written in the patch's own format are passed in (lowercase "ats", e.g. "greenhouse").
     # Older rows ("Greenhouse", status "OK") are read by the ats_fetch loop above, and ats.fetch_all
     # lower-cases "ats" and "status", so without this filter it would also pick those up and fail on
@@ -944,13 +929,15 @@ def main():
     except Exception as e:
         log(f"FAILED ats.py block: {e!r}", args.log)
 
-    # Funding / grant signals (12.10): independent of job results, never blocks the run.
-    if not args.dry_run:
+    # Funding / grant signals (optional, features.signals): independent of job results, never blocks the run.
+    features = profile.compiled().features
+    if not args.dry_run and features["signals"]:
         try:
             signals.run(lambda m: log(m, args.log), Path("data"), args.out_dir)
         except Exception as e:
             log(f"FAILED signals block: {e!r}", args.log)
-        # Employer replies in Gmail (13.10): rejection / interview / reply -> out/replies_latest.json.
+    # Employer replies in the inbox (optional, features.replies): rejection / interview / reply -> out/replies_latest.json.
+    if not args.dry_run and features["replies"]:
         try:
             replies.run(lambda m: log(m, args.log), Path("data"), args.out_dir)
         except Exception as e:
@@ -963,7 +950,7 @@ def main():
     for p in all_postings:
         enrich_from_url(p)
 
-    title_filtered = [p for p in all_postings if p.get("trusted_title") or title_matches(p["title"])]  # trusted: his own LinkedIn alerts (14.10)
+    title_filtered = [p for p in all_postings if p.get("trusted_title") or title_matches(p["title"])]  # trusted: the user's own LinkedIn alerts 
     log(f"{len(title_filtered)}/{len(all_postings)} posting(s) matched a target title", args.log)
 
     matched = [p for p in title_filtered if location_matches(p["location"])]
@@ -1006,7 +993,7 @@ def main():
         + ", ".join(f"p{k} {by_priority[k]}" for k in sorted(by_priority, key=lambda x: (x is None, x)))
         + "); dropped: "
         + (", ".join(f"{k} {v}" for k, v in drop_reasons.items()) or "none"), args.log)
-    # 25.10: after the drops, before the cross-source dedupe: one requisition published per country -> one card.
+    # after the drops, before the cross-source dedupe: one requisition published per country -> one card.
     # (The tracker comparison already ran inside classify above, so every country variant of a job in the
     # tracker was dropped there; what is left here is only jobs that are new to the tracker.)
     main_rows, collapse_line = collapse_postings(main_rows)
@@ -1065,7 +1052,7 @@ def main():
     # (unknown/imprecise — sorts as oldest), so this comparison is safe.
     sort_postings(new_postings)
 
-    # Stage A (13.10): read the body of every new ad and look for walls (jd_rules.py). Never blocks the run.
+    # screening : read the body of every new ad and look for walls (jd_rules.py). Never blocks the run.
     try:
         jd_fetch.enrich_and_screen(new_postings, lambda m: log(m, args.log),
                                    None if args.dry_run else args.out_dir)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-replies.py - finds employer replies in Gmail for Agent 1 (13.10.2026). No AI.
+replies.py - finds employer replies in Gmail (optional feature, features.replies). No AI.
 
 Reads INBOX over IMAP (same app password as the digest: .env SMTP_USER / SMTP_PASS), read-only:
 nothing is moved, deleted or marked as read. Keeps only job-related emails, classifies each:

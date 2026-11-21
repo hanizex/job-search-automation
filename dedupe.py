@@ -1,6 +1,6 @@
 """
-dedupe.py - one duplicate check for Agent 1 (poll_jobs / job_filters) and the 08:49 tracker import.
-Rule agreed with Mykola 13.10.2026: before a card is created, compare it with the tracker by
+dedupe.py - one duplicate check for the engine (poll_jobs / job_filters) and the 08:49 tracker import.
+Rule: before a card is created, compare it with the tracker by
 URL, by board job id, and by canonical company + similar role. Python 3.9, no dependencies.
 
 Verdicts for a candidate posting:
@@ -8,7 +8,7 @@ Verdicts for a candidate posting:
               (same meaningful title words) on a card added in the last REPOST_DAYS days.
               -> do NOT create a card.
   possible  - same company + same role family, but the role differs, or the matching card
-              is older than REPOST_DAYS. -> create the card, mark it "Можливий дубль: ...".
+              is older than REPOST_DAYS. -> create the card, mark it "Possible duplicate: ...".
   new       - nothing similar.
 
 CLI:

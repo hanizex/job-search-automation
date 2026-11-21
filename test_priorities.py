@@ -1,4 +1,5 @@
 """Offline tests for priorities.py (3-level scale of 26.10.2026). Run: python3 test_priorities.py"""
+import testsupport  # noqa: F401  (selects the example profile)
 import unittest
 
 import priorities as pr
@@ -50,6 +51,13 @@ class TestP3Hidden(unittest.TestCase):
             verdict, reason = jf.classify(self.row(loc), [])
             self.assertEqual(verdict, "drop", loc)
             self.assertIn("P3", reason)
+
+    def test_ukraine_plus_an_open_remote_entry_is_p1_not_ukraine_only(self):
+        import job_filters as jf
+        p = self.row("Ukraine (Remote); Remote, anywhere (no country listed)")
+        self.assertEqual(jf.classify(p, [])[0], "main")
+        self.assertEqual(p["priority"], 1)
+        self.assertEqual(jf.classify(self.row("Kyiv, Ukraine (Remote)"), [])[0], "drop")
 
     def test_p1_and_p2_still_pass_and_p3_returns_when_switched_on(self):
         import job_filters as jf
