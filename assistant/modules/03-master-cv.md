@@ -19,6 +19,8 @@ If the person searches for different kinds of roles, build one Master CV per rol
 8. **LANGUAGES** with level
 9. **WORK AUTHORISATION**: only if the person wants it; it answers the recruiter's unspoken question.
 
+Omit a section that has no confirmed fact (for example EDUCATION) and say it was left out. Work mode (for example "Open to remote") and a start date come from the profile or a Bank fact and are used only after the person confirms them in the current chat. The summary may restate at most one result; the experience section carries the details.
+
 ## Formatting rules (ATS)
 Single column. No tables, text boxes, columns or sidebars. No headers or footers (many parsers drop them, and contacts live there in many templates). No photo, icons, logos or charts. Calibri, Arial or Georgia, 10 to 12 pt. Section headings exactly as above. Dates as `MM/YYYY – MM/YYYY` with an en dash; a current role is `MM/YYYY – Present` and always has a start date. Bullets are `•` or a real list. Submit `.docx` unless the form says PDF. **At most 2 pages, which in a text chat means up to about 900 words.**
 

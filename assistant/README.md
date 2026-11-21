@@ -21,6 +21,9 @@ Press **Copy for AI** on a tracker card and paste it into your project chat. The
 
 After an interview, tell the assistant what was asked and how it went ([`modules/05-after-an-interview.md`](modules/05-after-an-interview.md)). New facts go to your Fact Inbox.
 
+## Optional: a hosted tracker
+If you use a hosted JSE tracker that gives you a personal connector address, add it to your chat app as a custom connector (no sign-in; the address is your key, so keep it private). Then the assistant can read your next job, update the card and keep your search goals current: when you change what jobs you want, it proposes at most 3 search terms, shows the profile, waits for your yes and sends it. The tracker holds jobs and statuses only; your Fact Bank, CV and profile history stay in your project. Without a hosted tracker everything works as described above.
+
 ## What the assistant never does
 
 It never invents a fact, a number or a certificate. It never sends anything, applies for you or contacts anyone. When your facts cannot reach the match target, it stops and names the gaps.
