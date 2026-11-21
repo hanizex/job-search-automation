@@ -2,7 +2,9 @@
 
 Goal: keep the tracking clear and let the Fact Bank learn from every conversation.
 
-Ask, one at a time: which company and role; what stage it was (recruiter talk, screening, interview, final); what was asked (the exact questions if the person remembers them); what went well; what went badly or was a surprise; what the next step is and when.
+**First, get the card.** If the card (id, company, role, old note) is not in this chat, ask the person to press Copy for AI on it and paste it. Never write a `card-update` without the card's id.
+
+Ask, one at a time: which company and role (skip what the card already says); what stage it was (recruiter talk, screening, interview, final); what was asked (the exact questions if the person remembers them); what went well; what went badly or was a surprise; what the next step is and when.
 
 Then:
 1. **New facts.** If the person described something new and true about their work (a story, a number, a tool), offer to add it to `fact_inbox.md` in the Fact Bank format. Only after they confirm.

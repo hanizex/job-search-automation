@@ -18,30 +18,31 @@ LinkedIn: <link>
 Source: <CV; LinkedIn Experience>
 
 ## Results
-### F010  [Result]  confirmed YYYY-MM-DD
+### F002  [Result]  confirmed YYYY-MM-DD
 <one plain statement with a number or a clear outcome>
 Role: F001
 Source: <where it comes from>
 
 ## Capabilities
-### F030  [Capability]  confirmed YYYY-MM-DD
+### F003  [Capability]  confirmed YYYY-MM-DD
 <statement>
 Role: F001
 Source: <where it comes from>
 
 ## Tools
-### F040  [Tool]  confirmed YYYY-MM-DD
-<Tool>. Role: F001 (or: none, with what it was, such as a course). About <how long>. Used for <what>. In production: yes/no.
+### F004  [Tool]  confirmed YYYY-MM-DD
+<Tool>. Role: F001 (or: none, with what it was, such as a course). Since MM/YYYY. Used for <what, or: not stated>. In production: yes / no / n/a.
+IDs run F001, F002, F003 ... in the order facts are confirmed; sections have no ID ranges.
 Source: <where it comes from>
 
 ## Education and certifications
-### F050  [Education]  confirmed YYYY-MM-DD
+### F005  [Education]  confirmed YYYY-MM-DD
 <Degree>, <Institution>, <year>
-### F051  [Certification]  confirmed YYYY-MM-DD
+### F006  [Certification]  confirmed YYYY-MM-DD
 <Certificate>, <year>. Only what is held.
 
 ## Languages
-### F060  [Language]  confirmed YYYY-MM-DD
+### F007  [Language]  confirmed YYYY-MM-DD
 <Language>: <level>
 
 ## Work authorisation

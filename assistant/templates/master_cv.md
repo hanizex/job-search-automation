@@ -12,11 +12,11 @@ WORK EXPERIENCE
 <Job title>
 <Employer>, <type of company> - <Location>
 MM/YYYY – Present
-• <Bullet with a number or a clear outcome> [F010]
-• <Bullet> [F011]
+• <Bullet with a number or a clear outcome> [F002]
+• <Bullet> [F003]
 
 KEY ACHIEVEMENTS
-• <Only results that do not fit above, at most three> [F012]
+• <Only results that do not fit above, at most three> [F004]
 
 EDUCATION
 <Degree>, <Institution> - <years>

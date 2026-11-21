@@ -23,8 +23,8 @@ If the person searches for different kinds of roles, build one Master CV per rol
 Single column. No tables, text boxes, columns or sidebars. No headers or footers (many parsers drop them, and contacts live there in many templates). No photo, icons, logos or charts. Calibri, Arial or Georgia, 10 to 12 pt. Section headings exactly as above. Dates as `MM/YYYY – MM/YYYY` with an en dash; a current role is `MM/YYYY – Present` and always has a start date. Bullets are `•` or a real list. Submit `.docx` unless the form says PDF. **At most 2 pages, which in a text chat means up to about 900 words.**
 
 ## Two versions
-- **Working version**: every bullet ends with its fact tag, for example `[F012]`. This is what the checks use. The header comes from the Contact block and needs no tag.
-- **Clean version**: the same text without tags, ready to send.
+- **Working version**: every bullet ends with its fact tag, for example `[F012]`. This is what the checks use and what is saved as `master_cv.md`. The header comes from the Contact block and needs no tag.
+- **Clean version**: the same text without tags, ready to send. Show the clean version to the person; show tags only on request or as a short list of fact IDs per section.
 
 ## Checks before you show it
 Every line except the header matches a confirmed fact; competency keywords reuse words from facts; dates use one format; one column, no tables, no photo; up to about 900 words; the header has exactly two lines. Report each check. For a failed check, show the exact line.
