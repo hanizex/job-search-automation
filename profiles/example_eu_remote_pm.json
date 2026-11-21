@@ -108,5 +108,9 @@
  "features": {
   "signals": true,
   "replies": true
+ },
+ "assistant": {
+  "match_target": 80,
+  "notes": ""
  }
 }

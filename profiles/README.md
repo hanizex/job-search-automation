@@ -28,6 +28,7 @@ If the file is missing or wrong, the engine says what is missing in plain words.
 | Visa-only places | derived | P3, hidden unless `show_p3` is true |
 | Companies | `companies.exclude` | dropped everywhere |
 | What you already have | `background.certificates`, `background.domains`, `background.eu_citizen` | an ad that demands a certificate, an industry or EU citizenship you have is not a blocker; one that demands what you lack is |
+| Assistant settings | `assistant.match_target`, `assistant.notes` | the match gate of the AI assistant (default 80%), and free text for what the profile has no field for (pay floor, relocation conditions, acceptable remote regions) |
 | Where to look | `sources.boards`, `sources.dou`, `sources.djinni` | which job boards are read and with which searches. Left empty, the searches are derived from your job titles |
 
 Countries and groups are listed in `geo/places.json`; boards and Djinni keywords in `catalog/sources.json`. The schema is `profiles/profile.schema.json`.

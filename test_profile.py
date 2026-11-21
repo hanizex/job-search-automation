@@ -40,6 +40,14 @@ class ProfileLoading(unittest.TestCase):
         self.assertEqual(p["languages"]["spoken"], ["english"])
         self.assertFalse(p["location"]["show_p3"])
 
+    def test_assistant_settings_default_and_validation(self):
+        p = sp.normalise({"version": 1, "roles": {"titles": ["x"]}, "location": {"home_country": "poland"}})
+        self.assertEqual(p["assistant"], {"match_target": 80, "notes": ""})
+        self.assertEqual(sp.compiled().match_target, 80)
+        for bad in (49, 101, "80", True, None):
+            with self.assertRaises(sp.ProfileError):
+                sp.normalise({"version": 1, "roles": {"titles": ["x"]}, "location": {"home_country": "poland"}, "assistant": {"match_target": bad}})
+
     def test_all_problems_are_reported_in_plain_language(self):
         with self.assertRaises(sp.ProfileError) as cm:
             sp.normalise({"version": 1, "roles": {"titles": []},

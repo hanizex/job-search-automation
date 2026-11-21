@@ -741,6 +741,8 @@ def write_import_file(new_postings: list, pool_path: Path, out_path: Path) -> No
         row = {"company": company, "role": p["title"], "url": url, "location": loc, "pay": pay,
                "board": board, "posted": p["posted_display"].replace(" (POSSIBLY STALE)", ""),
                "found": today_s}
+        if p.get("priority") in (1, 2, 3):
+            row["priority"] = p["priority"]                  # the tracker sorts by it
         for k in ("jd", "jd_verdict", "jd_why", "jd_src"):   # screening 
             if p.get(k):
                 row[k] = p[k]

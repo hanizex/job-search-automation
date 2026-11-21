@@ -230,6 +230,24 @@
           "description": "Read employer replies from your inbox, read-only (replies.py). Needs .env."
         }
       }
+    },
+    "assistant": {
+      "type": "object",
+      "description": "Settings for the AI assistant. The engine ignores them.",
+      "properties": {
+        "match_target": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 100,
+          "default": 80,
+          "description": "Percent of the ad's requirements that confirmed facts must cover before a CV is built."
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Things the profile has no field for: pay floor, relocation conditions, acceptable remote regions, wishes. The assistant reads them."
+        }
+      }
     }
   }
 }

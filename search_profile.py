@@ -42,6 +42,10 @@ DEFAULTS = {
         "show_p3": False,
     },
     "companies": {"exclude": {}},
+    "assistant": {
+        "match_target": 80,       # percent of the ad's requirements your confirmed facts must cover before a CV is built (the AI assistant uses it, the engine ignores it)
+        "notes": "",              # things the profile has no field for: pay floor, relocation conditions, acceptable remote regions
+    },
     "features": {
         "signals": False,          # funding / grant news as leads (signals.py), regions and sectors are set in that file
         "replies": False,          # read employer replies from your inbox, read-only (replies.py); needs .env
@@ -136,6 +140,13 @@ def normalise(raw: dict) -> dict:
         problems.append("companies.exclude must be an object like {\"Company name\": \"reason\"}.")
         ex = {}
     p["companies"]["exclude"] = {str(k).strip().lower(): str(v) for k, v in ex.items()}
+
+    asst = p["assistant"]
+    mt = asst.get("match_target")
+    if isinstance(mt, bool) or not isinstance(mt, int) or not 50 <= mt <= 100:
+        problems.append("assistant.match_target must be a whole number between 50 and 100.")
+    if not isinstance(asst.get("notes"), str) or len(asst["notes"]) > 2000:
+        problems.append("assistant.notes must be text of at most 2000 characters.")
 
     ft = p["features"]
     for key in ("signals", "replies"):
@@ -311,7 +322,7 @@ def compiled() -> SimpleNamespace:
         eu_citizen=p["background"]["eu_citizen"], avoid_ties=set(p["background"]["avoid_ties"]),
         home_in_eu=home in geo.expand_countries(["@eu"]),
         ui_language=p["ui_language"],
-        features=p["features"],
+        features=p["features"], match_target=p["assistant"]["match_target"],
         boards=p["sources"]["boards"], dou_terms=dou_terms, djinni_keywords=djinni_keywords, unmatched_titles=suggested["unmatched"],
         home_ad_re=_home_ad_re(home, loc["home_extra_places"]),
         exclude_companies=p["companies"]["exclude"],
