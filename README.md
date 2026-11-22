@@ -6,7 +6,9 @@ A daily job-search pipeline for any role and market. It collects new postings fr
 
 I approached it the way I run delivery: start from the real process, automate the repetitive parts, keep a human in the loop for decisions, and measure whether each source is worth keeping.
 
-Try the interactive demo of the tracker and a step-by-step setup guide: <https://mykola.pages.dev/tools/job-search-engine/>.
+**Online tracker (free during the test).** If you would rather not run anything yourself, there is an online version: it collects fitting jobs for you every morning, keeps their statuses on a personal page, and connects to your AI chat (Claude or ChatGPT) so the chat can work on the next job with you. Start here: <https://mykola.pages.dev/tools/job-search-engine/hosted/>. To get access, write to me on [LinkedIn](https://www.linkedin.com/in/hanizex/) or [Telegram](https://t.me/hanizex).
+
+The interactive demo and the step-by-step setup guide are on the project page: <https://mykola.pages.dev/tools/job-search-engine/>.
 
 ## How it works
 

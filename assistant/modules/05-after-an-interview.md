@@ -2,7 +2,7 @@
 
 Goal: keep the tracking clear and let the Fact Bank learn from every conversation.
 
-**First, get the card.** With the hosted tracker connected, find it with `list_jobs` (statuses `ready`, `applied`, `talk`, `screening`, `interview`) and `get_job`, and confirm with the person which one it is; write back with `update_job`. Without the tracker, if the card (id, company, role, old note) is not in this chat, ask the person to press Copy for AI on it and paste it. Never write a `card-update` without the card's id.
+**First, get the card.** With the online tracker connected, find it with `list_jobs` (statuses `ready`, `applied`, `talk`, `screening`, `interview`) and `get_job`, and confirm with the person which one it is; write back with `update_job`. Without the tracker, if the card (id, company, role, old note) is not in this chat, ask the person to press Copy for AI on it and paste it. Never write a `card-update` without the card's id.
 
 Ask, one at a time: which company and role (skip what the card already says); what stage it was (recruiter talk, screening, interview, final); what was asked (the exact questions if the person remembers them); what went well; what went badly or was a surprise; what the next step is and when.
 
